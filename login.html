@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Login · Auxílio Secretaria</title>
+    
+    <!-- Fontes -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2342;
+            --secondary: #FF6B35;
+            --accent: #00A86B;
+            --background: #FFFFFF;
+            --surface: #F8FAFC;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --border: #E2E8F0;
+            --error: #EF4444;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            background: white;
+            overflow: hidden;
+        }
+
+        /* Lado do FORMULÁRIO - ESQUERDA 50% */
+        .form-side {
+            width: 50%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 2rem;
+        }
+
+        .form-container {
+            max-width: 440px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Lado da FOTO - DIREITA 50% */
+        .photo-side {
+            width: 50%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: var(--primary);
+            order: 2; /* Garante que a foto fique à direita */
+        }
+
+        .photo-side img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(10, 35, 66, 0.95), transparent);
+            padding: 2.5rem 2rem;
+            color: white;
+        }
+
+        .photo-overlay h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        .photo-overlay p {
+            font-size: 1rem;
+            opacity: 0.95;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .photo-overlay i {
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .login-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .mini-logo {
+            width: 70px;
+            height: 70px;
+            background: var(--surface);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.2rem;
+            border: 2px solid var(--border);
+        }
+
+        .mini-logo i {
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        .login-header h2 {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            line-height: 1.2;
+        }
+
+        .login-header p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .polo-indicator {
+            background: var(--surface);
+            border-radius: 100px;
+            padding: 0.7rem 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            color: var(--text);
+            width: fit-content;
+        }
+
+        .polo-indicator i {
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 1.2rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3.2rem;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            background: var(--surface);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--secondary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--secondary);
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper label {
+            margin-bottom: 0;
+            font-weight: 400;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .login-btn {
+            width: 100%;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.25);
+            margin-bottom: 1.5rem;
+        }
+
+        .login-btn:hover {
+            background: #ff5a1f;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .error-message {
+            background: #FEF2F2;
+            border: 1px solid #FEE2E2;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            color: var(--error);
+            font-size: 0.95rem;
+            display: none;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .error-message.show {
+            display: flex;
+        }
+
+        .info-box {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+        }
+
+        .info-box i {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+
+        .info-box p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .info-box strong {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* RESPONSIVIDADE - CELULAR */
+        @media (max-width: 768px) {
+            .login-wrapper {
+                flex-direction: column;
+            }
+
+            .form-side {
+                width: 100%;
+                height: 60vh;
+                padding: 1.5rem;
+                order: 2;
+            }
+
+            .photo-side {
+                width: 100%;
+                height: 40vh;
+                order: 1;
+            }
+
+            .photo-overlay {
+                padding: 1.5rem;
+            }
+
+            .photo-overlay h2 {
+                font-size: 1.8rem;
+            }
+
+            .photo-overlay p {
+                font-size: 0.95rem;
+            }
+
+            .form-container {
+                max-width: 100%;
+            }
+
+            .mini-logo {
+                width: 60px;
+                height: 60px;
+            }
+
+            .mini-logo i {
+                font-size: 1.8rem;
+            }
+
+            .login-header h2 {
+                font-size: 1.8rem;
+            }
+
+            .login-header p {
+                font-size: 0.95rem;
+            }
+
+            .polo-indicator {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .photo-side {
+                height: 35vh;
+            }
+
+            .form-side {
+                height: 65vh;
+                padding: 1.2rem;
+            }
+
+            .login-header h2 {
+                font-size: 1.6rem;
+            }
+
+            .mini-logo {
+                width: 55px;
+                height: 55px;
+            }
+
+            .mini-logo i {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <!-- Lado do FORMULÁRIO - ESQUERDA -->
+        <div class="form-side">
+            <div class="form-container">
+                <a href="index.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    voltar
+                </a>
+
+                <div class="login-header">
+                    <div class="mini-logo">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h2>Bem-vinda</h2>
+                    <p>acesse seu painel de apoio</p>
+                </div>
+
+                <div class="polo-indicator">
+                    <i class="fas fa-map-pin"></i>
+                    Polo Santo Antônio
+                </div>
+
+                <div class="error-message" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Por favor, digite seu nome</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user" style="margin-right: 0.4rem;"></i>
+                        Seu nome
+                    </label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-smile"></i>
+                        <input type="text" id="username" placeholder="Como prefere ser chamada?" autofocus>
+                    </div>
+                </div>
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="remember" checked>
+                    <label for="remember">Lembrar de mim neste computador</label>
+                </div>
+
+                <button class="login-btn" onclick="fazerLogin()">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    Acessar Painel
+                </button>
+
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <p>
+                        <strong>Ambiente interno</strong> · Exclusivo para equipe da secretaria.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lado da FOTO - DIREITA -->
+        <div class="photo-side">
+            <img src="https://image2url.com/r2/default/images/1772798797419-6df96d50-58b5-46e2-8ce2-66fb064d0697.png" 
+                 alt="Campus Unopar">
+            <div class="photo-overlay">
+                <h2>Unopar</h2>
+                <p><i class="fas fa-map-pin"></i> Polo Santo Antônio · 8h às 22h</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fazerLogin() {
+            const username = document.getElementById('username').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            const remember = document.getElementById('remember').checked;
+
+            if (username === '') {
+                errorMessage.classList.add('show');
+                document.getElementById('username').style.borderColor = '#EF4444';
+                return;
+            }
+
+            if (remember) {
+                localStorage.setItem('username', username);
+                localStorage.setItem('rememberUser', 'true');
+            } else {
+                sessionStorage.setItem('username', username);
+            }
+
+            document.body.style.transition = 'opacity 0.2s ease';
+            document.body.style.opacity = '0';
+            
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 200);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedName = localStorage.getItem('username');
+            if (savedName) {
+                document.getElementById('username').value = savedName;
+                document.getElementById('remember').checked = true;
+            }
+        });
+
+        document.getElementById('username').addEventListener('input', function() {
+            document.getElementById('errorMessage').classList.remove('show');
+            this.style.borderColor = '#E2E8F0';
+        });
+
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                fazerLogin();
+            }
+        });
+    </script>
+</body>
+</html>

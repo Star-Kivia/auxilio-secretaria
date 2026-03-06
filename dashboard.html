@@ -1,0 +1,3034 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Auxílio Secretaria · Unopar</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <!-- Fontes e ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2342;
+            --primary-light: #1E3A5F;
+            --secondary: #FF6B35;
+            --secondary-light: #FF8A5C;
+            --cal-1: #FFB7B7;
+            --cal-2: #B7D7FF;
+            --cal-3: #B7FFC8;
+            --cal-4: #FFF1B7;
+            --cal-5: #E3B7FF;
+            --cal-6: #FFB7E7;
+            --cal-7: #B7E7FF;
+            --bg: #FFF9F5;
+            --surface: #FFFFFF;
+            --text: #2D3E50;
+            --text-soft: #5A6B7A;
+            --text-light: #8A9AA8;
+            --border: #FFE4D6;
+            --shadow-sm: 0 4px 12px rgba(255, 107, 53, 0.05);
+            --shadow-md: 0 8px 20px rgba(255, 107, 53, 0.1);
+            --shadow-lg: 0 12px 28px rgba(255, 107, 53, 0.15);
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--border);
+            border-top-color: var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .loading-error {
+            color: #DC2626;
+            font-size: 0.9rem;
+            max-width: 80%;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: #FEE2E2;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .loading-retry {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-left: 4px solid var(--secondary);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            max-width: 380px;
+            animation: slideIn 0.3s ease;
+            cursor: pointer;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast i {
+            color: var(--secondary);
+            font-size: 1.5rem;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.2rem;
+            font-size: 0.95rem;
+        }
+
+        .toast-message {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+        }
+
+        .toast-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            background: var(--secondary);
+            color: white;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+
+        .toast-close {
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Header */
+        .notification-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--secondary);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.3rem;
+            box-shadow: 0 6px 12px rgba(10, 35, 66, 0.15);
+        }
+
+        .brand-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .brand-text p {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .nav-pages {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-page {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            position: relative;
+        }
+
+        .nav-page.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(10, 35, 66, 0.2);
+        }
+
+        .nav-page .notif-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background: var(--secondary);
+            border-radius: 50%;
+            display: none;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .datetime {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.4rem 1.2rem;
+            background: var(--bg);
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-soft);
+            border: 1px solid var(--border);
+        }
+
+        .datetime i {
+            color: var(--secondary);
+        }
+
+        .user-greeting {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1.2rem;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            border-radius: 40px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .global-notification {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: white;
+            color: var(--secondary);
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--secondary);
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.2rem;
+            padding-bottom: 0;
+        }
+
+        .dashboard,
+        .page {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            min-height: 100%;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            margin-bottom: 1.2rem;
+        }
+
+        .card:hover {
+            border-color: transparent;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--border);
+            background: rgba(255, 107, 53, 0.02);
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--primary);
+        }
+
+        .card-header h3 i {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            background: rgba(255, 107, 53, 0.1);
+            padding: 0.3rem;
+            border-radius: 10px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .btn-icon:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            transform: scale(1.02);
+        }
+
+        .btn-text {
+            padding: 0.5rem 1.2rem;
+            border-radius: 40px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text-soft);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-text:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .card-content {
+            padding: 1.2rem 1.5rem 1.5rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .calendario-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .dia-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .dia-nome {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 700;
+            box-shadow: 0 6px 12px rgba(10, 35, 66, 0.2);
+        }
+
+        .dia-data {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            background: var(--bg);
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+        }
+
+        .contador-aulas {
+            background: var(--secondary);
+            color: white;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(255, 107, 53, 0.3);
+        }
+
+        .tabela-aulas {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+        }
+
+        .tabela-aulas thead tr {
+            background: var(--primary);
+            color: white;
+            border-radius: var(--radius-md);
+        }
+
+        .tabela-aulas th {
+            padding: 1rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .tabela-aulas th:first-child {
+            border-radius: 16px 0 0 16px;
+        }
+
+        .tabela-aulas th:last-child {
+            border-radius: 0 16px 16px 0;
+        }
+
+        .tabela-aulas tbody tr {
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .tabela-aulas tbody tr:hover {
+            transform: scale(1.002);
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.15);
+        }
+
+        .tabela-aulas tbody tr:nth-child(1) {
+            background: var(--cal-1);
+        }
+
+        .tabela-aulas tbody tr:nth-child(2) {
+            background: var(--cal-2);
+        }
+
+        .tabela-aulas tbody tr:nth-child(3) {
+            background: var(--cal-3);
+        }
+
+        .tabela-aulas tbody tr:nth-child(4) {
+            background: var(--cal-4);
+        }
+
+        .tabela-aulas tbody tr:nth-child(5) {
+            background: var(--cal-5);
+        }
+
+        .tabela-aulas tbody tr:nth-child(6) {
+            background: var(--cal-6);
+        }
+
+        .tabela-aulas tbody tr:nth-child(7) {
+            background: var(--cal-7);
+        }
+
+        .tabela-aulas td {
+            padding: 1rem 0.8rem;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .tabela-aulas td:first-child {
+            border-radius: 16px 0 0 16px;
+        }
+
+        .tabela-aulas td:last-child {
+            border-radius: 0 16px 16px 0;
+        }
+
+        .tabela-aulas tbody tr.cancelada {
+            background: #E2E8F0 !important;
+            opacity: 0.7;
+        }
+
+        .cancelada-badge {
+            background: #94A3B8;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .curso-nome {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .sala-badge {
+            background: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+/* ========== CONTATOS RÁPIDOS - DASHBOARD ========== */
+.contatos-grid-dash {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+    max-height: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.3rem 0.3rem 0.8rem 0.3rem;
+    grid-auto-flow: row;
+    grid-auto-columns: minmax(250px, 1fr);
+    
+    /* Opção 1: SCROLLBAR INVISÍVEL (descomente se preferir) */
+    /* scrollbar-width: none; */
+}
+
+/* Opção 1: Scrollbar invisível no Chrome/Safari/Edge */
+/* .contatos-grid-dash::-webkit-scrollbar {
+    display: none;
+} */
+
+/* Opção 2: SCROLLBAR BONITINHA (descomente se preferir) */
+/* .contatos-grid-dash::-webkit-scrollbar {
+    height: 4px;
+}
+
+.contatos-grid-dash::-webkit-scrollbar-track {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+.contatos-grid-dash::-webkit-scrollbar-thumb {
+    background: var(--secondary);
+    border-radius: 10px;
+}
+
+.contatos-grid-dash::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+} */
+
+/* Quando a tela for menor que 600px, ativa o scroll horizontal */
+@media (max-width: 600px) {
+    .contatos-grid-dash {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(250px, 1fr));
+        grid-auto-flow: column;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 0.8rem;
+        
+        /* SCROLLBAR INVISÍVEL APENAS EM TELAS PEQUENAS */
+        scrollbar-width: none; /* Firefox */
+    }
+    
+    /* Scrollbar invisível no Chrome/Safari/Edge */
+    .contatos-grid-dash::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .contato-card-dash {
+        scroll-snap-align: start;
+        min-width: 250px;
+    }
+}
+
+/* Opção alternativa: SCROLLBAR BONITINHA só em telas pequenas */
+/* Substitua o bloco acima por este se preferir a barra bonitinha */
+/*
+@media (max-width: 600px) {
+    .contatos-grid-dash {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(250px, 1fr));
+        grid-auto-flow: column;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 0.8rem;
+    }
+    
+    .contatos-grid-dash::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .contatos-grid-dash::-webkit-scrollbar-track {
+        background: var(--border);
+        border-radius: 10px;
+    }
+    
+    .contatos-grid-dash::-webkit-scrollbar-thumb {
+        background: var(--secondary);
+        border-radius: 10px;
+    }
+    
+    .contato-card-dash {
+        scroll-snap-align: start;
+        min-width: 250px;
+    }
+}
+*/
+
+.contato-card-dash {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.contato-card-dash:hover {
+    border-color: var(--secondary);
+    background: white;
+    transform: translateY(-0.4px);
+    box-shadow: var(--shadow-md);
+}
+
+.contato-icone-dash {
+    width: 38px;
+    height: 38px;
+    background: var(--primary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.contato-info-dash {
+    flex: 1;
+    min-width: 0;
+}
+
+.contato-nome-dash {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--primary);
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contato-desc-dash {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contato-phone-dash {
+    font-weight: 700;
+    color: var(--secondary);
+    font-size: 0.7rem;
+}
+
+.contato-actions-dash {
+    display: flex;
+    gap: 0.3rem;
+    flex-shrink: 0;
+}
+
+.contato-edit-dash,
+.contato-wpp-dash {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+}
+
+.contato-edit-dash {
+    background: var(--bg);
+    color: var(--text-soft);
+    border: 1px solid var(--border);
+}
+
+.contato-edit-dash:hover {
+    background: var(--secondary);
+    color: white;
+}
+
+.contato-wpp-dash {
+    background: #25D366;
+    color: white;
+}
+
+.contato-wpp-dash:hover {
+    background: #128C7E;
+    transform: scale(1.1) rotate(5deg);
+}
+
+        /* ========== PORTAIS - ACESSO RÁPIDO CORRIGIDO ========== */
+        .portais-scroll-container {
+            max-height: auto;
+            overflow-y: hidden;
+            overflow-x: auto;
+            padding: 0.2rem 0.2rem 0.3rem;
+        }
+
+        .portais-scroll {
+            display: grid;
+            grid-template-rows: repeat(2, 1fr);
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(85px, auto);
+            /* <--- AUMENTE ESTE VALOR (ex: 100px) */
+            gap: 0.6rem;
+            /* <--- AUMENTE O GAP se quiser mais espaço entre os cards */
+            width: max-content;
+        }
+
+        .portal-item-horizontal {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            padding: 0.5rem 0.3rem;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border);
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            min-width: 75px;
+            /* <--- AUMENTE ESTE VALOR (ex: 90px) */
+            max-width: 95px;
+            /* <--- AUMENTE ESTE VALOR (ex: 90px) */
+            position: relative;
+        }
+
+        .portal-item-horizontal:hover {
+            border-color: var(--secondary);
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .portal-icone-horizontal {
+            width: 36px;
+            /* <--- AUMENTE ESTE VALOR (ex: 36px) */
+            height: 40px;
+            /* <--- AUMENTE ESTE VALOR (ex: 36px) */
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            /* <--- AUMENTE ESTE VALOR (ex: 1.2rem) */
+            flex-shrink: 0;
+        }
+
+        .portal-nome-horizontal {
+            font-size: 0.7rem;
+            /* <--- AUMENTE ESTE VALOR (ex: 0.7rem) */
+            font-weight: 600;
+            text-align: center;
+            color: var(--primary);
+            white-space: normal;
+            word-break: break-word;
+            max-width: 90px;
+            /* <--- AUMENTE ESTE VALOR junto com min-width */
+            line-height: 1.4;
+        }
+
+        .portal-edit-horizontal {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            background: white;
+            border-radius: 50%;
+            width: 16px;
+            /* <--- Ícone de edição pequeno, pode aumentar se quiser */
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            color: var(--text-soft);
+            font-size: 0.55rem;
+        }
+
+        .portal-item-horizontal:hover .portal-edit-horizontal {
+            opacity: 1;
+        }
+
+        .portal-edit-horizontal:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+
+        /* NOTAS */
+        .notas-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .notas-busca {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .notas-busca i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .notas-busca input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            background: var(--bg);
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .notas-busca input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .btn-nova-nota {
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            color: white;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 6px 12px rgba(255, 107, 53, 0.3);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-nova-nota:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        .notas-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem 0.2rem;
+        }
+
+        .nota-card {
+            border-radius: 20px;
+            padding: 1.2rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+        }
+
+        .nota-card:hover {
+            transform: translateY(-5px) rotate(0.5deg);
+            box-shadow: 0 15px 30px rgba(255, 107, 53, 0.2);
+            border-color: white;
+        }
+
+        .nota-rosa {
+            background: #FFE9F0;
+            border-bottom: 5px solid #FFB6C1;
+        }
+
+        .nota-azul {
+            background: #E6F3FF;
+            border-bottom: 5px solid #9FC5F8;
+        }
+
+        .nota-verde {
+            background: #E3F7E9;
+            border-bottom: 5px solid #B6D7A8;
+        }
+
+        .nota-amarela {
+            background: #FFF8E7;
+            border-bottom: 5px solid #FFE599;
+        }
+
+        .nota-lilas {
+            background: #F3E8FF;
+            border-bottom: 5px solid #D5A6F0;
+        }
+
+        .nota-mint {
+            background: #E0F7F0;
+            border-bottom: 5px solid #A2D9D9;
+        }
+
+        .nota-conteudo {
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            font-weight: 500;
+            min-height: 60px;
+            white-space: pre-wrap;
+        }
+
+        .nota-conteudo ul,
+        .nota-conteudo ol {
+            padding-left: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .nota-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.65rem;
+            color: var(--text-light);
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            padding-top: 0.5rem;
+        }
+
+        .nota-acoes {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nota-acoes i {
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .nota-acoes i:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Botão Ver Todos */
+        .ver-todos-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            border: 2px dashed var(--border);
+            color: var(--text-soft);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .ver-todos-btn:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+            background: white;
+        }
+
+        /* Botão Ver Contatos */
+        .ver-contatos-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.2rem;
+            background: var(--bg);
+            border-radius: 40px;
+            border: 2px solid var(--border);
+            color: var(--text-soft);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .ver-contatos-btn:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        /* Rodapé */
+        .footer {
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            padding: 0.8rem 1.5rem;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        .footer strong {
+            color: var(--secondary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 30px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--border);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+        }
+
+        .modal-field {
+            margin-bottom: 1.2rem;
+        }
+
+        .modal-field label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            color: var(--text-soft);
+        }
+
+        .modal-field input,
+        .modal-field select,
+        .modal-field textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .modal-field textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .cores-seletor {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .cor-opcao {
+            width: 35px;
+            height: 35px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .cor-opcao:hover {
+            transform: scale(1.1);
+        }
+
+        .cor-opcao.selecionada {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px white;
+        }
+
+        .icones-seletor {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.3rem;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 0.3rem;
+        }
+
+        .icone-opcao {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .icone-opcao:hover {
+            border-color: var(--secondary);
+            background: white;
+        }
+
+        .icone-opcao.selecionado {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            padding: 0.5rem;
+            background: var(--bg);
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+
+        .editor-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .editor-btn:hover {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .editor-content {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .editor-content ul,
+        .editor-content ol {
+            padding-left: 2rem;
+            margin: 0.5rem 0;
+        }
+
+        [contenteditable="true"]:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .modal-btn.primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: var(--secondary-light);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.secondary {
+            background: var(--bg);
+            color: var(--text-soft);
+        }
+
+        .modal-btn.danger {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .modal-btn.danger:hover {
+            background: #DC2626;
+            color: white;
+        }
+
+        /* Info Modal (mensagens brancas) */
+        .info-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--border);
+            z-index: 10000;
+            display: none;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .info-modal.active {
+            display: block;
+        }
+
+        .info-modal i {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .info-modal h4 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-modal p {
+            color: var(--text-soft);
+            margin-bottom: 1.5rem;
+        }
+
+        .info-modal button {
+            padding: 0.8rem 2rem;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 1100px) {
+            .notas-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .notas-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .notas-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Carregando dados...</div>
+        <div class="loading-error" id="loadingError"></div>
+        <button class="loading-retry" id="retryButton" onclick="window.location.reload()">Tentar novamente</button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast" onclick="handleToastClick()">
+        <i class="fas fa-bell"></i>
+        <div class="toast-content">
+            <div class="toast-title" id="toastTitle"></div>
+            <div class="toast-message" id="toastMessage"></div>
+            <div class="toast-badge" id="toastBadge"></div>
+        </div>
+        <div class="toast-close" onclick="event.stopPropagation(); closeToast()">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+
+    <!-- Info Modal (mensagens) -->
+    <div class="info-modal" id="infoModal">
+        <i class="fas fa-info-circle"></i>
+        <h4 id="infoModalTitle">Atenção</h4>
+        <p id="infoModalMessage">Clique em uma aula específica na tabela para editar</p>
+        <button onclick="closeInfoModal()">OK</button>
+    </div>
+
+    <div class="app" style="display: none;" id="appContent">
+        <header class="header">
+            <div class="header-left">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Auxílio Secretaria</h1>
+                        <p>Polo Santo Antônio</p>
+                    </div>
+                </div>
+
+                <nav class="nav-pages">
+                    <div class="nav-page active" data-page="dashboard">
+                        Dashboard
+                        <span class="notif-dot" id="notifDashboard"></span>
+                    </div>
+                    <div class="nav-page" data-page="calendario">
+                        Calendário
+                        <span class="notif-dot" id="notifCalendario"></span>
+                    </div>
+                    <div class="nav-page" data-page="biblioteca">
+                        Biblioteca
+                        <span class="notif-dot" id="notifBiblioteca"></span>
+                    </div>
+                    <div class="nav-page" data-page="suporteti" onclick="window.location.href='suporte.html'">
+                        Suporte TI
+                        <span class="notif-dot" id="notifSuporte"></span>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="header-right">
+                <div class="datetime">
+                    <i class="far fa-calendar"></i>
+                    <span id="currentDate"></span>
+                    <i class="far fa-clock"></i>
+                    <span id="currentTime"></span>
+                </div>
+                <div class="user-greeting notification-badge" id="globalNotif" onclick="showNextNotification()">
+                    <i class="far fa-smile"></i>
+                    <span id="userName"></span>
+                    <span class="global-notification" id="globalNotifCount" style="display: none;">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Dashboard -->
+            <div id="dashboard" class="page active">
+                <div class="dashboard">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-calendar-alt"></i> Calendário de Hoje</h3>
+                            <div class="card-actions">
+                                <button class="btn-icon" onclick="openCancelModal()" title="Cancelar/Descancelar">
+                                    <i class="fas fa-ban"></i>
+                                </button>
+                                <button class="btn-icon" onclick="openAddAulaModal()" title="Adicionar Aula">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="btn-text" onclick="showEditInfo()">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-content" id="todayCalendar">
+                            <p style="text-align:center; padding:1rem;">Carregando...</p>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-address-book"></i> Contatos Rápidos</h3>
+                                <button class="btn-text" onclick="openAddContactModal()">
+                                    <i class="fas fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <div class="contatos-grid-dash" id="quickContacts">
+                                    <p style="text-align:center; padding:1rem;">Carregando...</p>
+                                </div>
+                                <a href="contatos.html" class="ver-contatos-btn"
+                                    style="margin-top:0.5rem; display:inline-flex;">
+                                    <i class="fas fa-eye"></i> Ver todos os contatos
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-external-link-alt"></i> Acesso Rápido</h3>
+                                <button class="btn-text" onclick="openAddPortalModal()">
+                                    <i class="fas fa-plus"></i> Adicionar Link
+                                </button>
+                            </div>
+                            <div class="card-content">
+                                <div class="portais-scroll-container">
+                                    <div class="portais-scroll" id="quickPortals">
+                                        <p style="text-align:center; padding:1rem;">Carregando...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-sticky-note"></i> Bloco de Notas</h3>
+                            <div class="notas-header">
+                                <div class="notas-busca">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" placeholder="Buscar notas..." id="notaSearch"
+                                        onkeyup="filterNotas()">
+                                </div>
+                                <button class="btn-nova-nota" onclick="openNewNoteModal()">
+                                    <i class="fas fa-plus"></i> Nova Nota
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="notas-grid" id="notasGrid">
+                                <p style="text-align:center; padding:1rem;">Carregando...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendário Completo -->
+            <div id="calendario" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-calendar-week"></i> Calendário Semanal</h3>
+                        <div class="card-actions">
+                            <button class="btn-icon" onclick="openAddAulaModal()" title="Adicionar Aula">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="btn-text" onclick="showEditInfo()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content" id="fullCalendar">
+                        <p style="text-align:center; padding:1rem;">Carregando...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biblioteca -->
+            <div id="biblioteca" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-book"></i> Biblioteca</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="text-align:center; padding:2rem; color:var(--text-light);">
+                            <i class="fas fa-tools" style="font-size:3rem; margin-bottom:1rem; display:block;"></i>
+                            <h4 style="color:var(--primary); margin-bottom:1rem;">📚 Em Planejamento</h4>
+                            <p style="margin-bottom:1rem; max-width:600px; margin-left:auto; margin-right:auto;">
+                                Esta página será um guia rápido para tirar dúvidas e dar suporte para diversos tipos de
+                                problemas que os alunos trazem diariamente.
+                            </p>
+                            <p style="font-style:italic; color:var(--text-soft);">
+                                Em desenvolvimento...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suporte TI -->
+            <div id="suporteti" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-laptop"></i> Suporte TI</h3>
+                    </div>
+                    <div class="card-content">
+                        <div style="text-align:center; padding:2rem; color:var(--text-light);">
+                            <i class="fas fa-tools" style="font-size:3rem; margin-bottom:1rem; display:block;"></i>
+                            <h4 style="color:var(--primary); margin-bottom:1rem;">🔧 Central de Soluções Rápidas</h4>
+                            <p style="margin-bottom:2rem;">
+                                Em breve: mini tutoriais para problemas comuns de TI!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Rodapé -->
+        <footer class="footer">
+            <p>Criado por <strong>Kívia</strong> · Estagiária na Unopar · 2026 · Para agilizar minha rotina de trabalho
+                e ajudar meus colegas ❤️</p>
+        </footer>
+    </div>
+
+    <!-- Modais -->
+    <div class="modal" id="cancelModal">
+        <div class="modal-content">
+            <h3>Cancelar / Descancelar Aula</h3>
+            <div class="modal-field">
+                <label>Selecione a aula</label>
+                <select id="cancelAulaSelect"></select>
+            </div>
+            <div class="modal-field">
+                <label>Status atual</label>
+                <div id="cancelStatusAtual"></div>
+            </div>
+            <div class="modal-field">
+                <label>Justificativa (se cancelar)</label>
+                <textarea id="cancelJustificativa" placeholder="Ex: Professor faltou..."></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeCancelModal()">Voltar</button>
+                <button class="modal-btn primary" onclick="toggleCancelAula()">Alternar Status</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editAulaModal">
+        <div class="modal-content">
+            <h3>Editar Aula</h3>
+            <input type="hidden" id="editAulaId">
+            <div class="modal-field">
+                <label>Curso</label>
+                <input type="text" id="editCurso" placeholder="Digite o nome do curso" list="cursos-list">
+                <datalist id="cursos-list">
+                    <option value="Biomedicina">
+                    <option value="Farmácia">
+                    <option value="Fisioterapia">
+                    <option value="Educação Física Bacharelado">
+                    <option value="Enfermagem">
+                    <option value="Pedagogia">
+                    <option value="Núcleo Licenciaturas">
+                    <option value="Núcleo Saúde">
+                    <option value="Serviço Social">
+                </datalist>
+            </div>
+            <div class="modal-field">
+                <label>Período</label>
+                <input type="text" id="editPeriodo" placeholder="Ex: 2º (flex) e 3º">
+            </div>
+            <div class="modal-field">
+                <label>Horário</label>
+                <input type="text" id="editHorario" placeholder="Ex: 19:00-21:00">
+            </div>
+            <div class="modal-field">
+                <label>Sala</label>
+                <select id="editSala">
+                    <option value="Sala 02">Sala 02</option>
+                    <option value="Sala 03">Sala 03</option>
+                    <option value="Sala 04">Sala 04</option>
+                    <option value="Sala 05">Sala 05</option>
+                    <option value="Auditório I">Auditório I</option>
+                    <option value="Auditório II">Auditório II</option>
+                    <option value="Lab. Enfermagem">Lab. Enfermagem</option>
+                    <option value="Lab. Multidisciplinar">Lab. Multidisciplinar</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Alunos</label>
+                <input type="number" id="editAlunos">
+            </div>
+            <div class="modal-field">
+                <label>Tutor</label>
+                <input type="text" id="editTutor" placeholder="Nome do tutor">
+            </div>
+            <div class="modal-field">
+                <label>Dia da semana</label>
+                <select id="editDia">
+                    <option value="segunda">Segunda</option>
+                    <option value="terca">Terça</option>
+                    <option value="quarta">Quarta</option>
+                    <option value="quinta">Quinta</option>
+                    <option value="sexta">Sexta</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeEditAulaModal()">Cancelar</button>
+                <button class="modal-btn primary" onclick="saveAula()">Salvar</button>
+                <button class="modal-btn danger" onclick="deleteAula()">Excluir Aula</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addAulaModal">
+        <div class="modal-content">
+            <h3>Adicionar Nova Aula</h3>
+            <div class="modal-field">
+                <label>Curso</label>
+                <input type="text" id="addCurso" placeholder="Digite o nome do curso" list="add-cursos-list">
+                <datalist id="add-cursos-list">
+                    <option value="Biomedicina">
+                    <option value="Farmácia">
+                    <option value="Fisioterapia">
+                    <option value="Educação Física Bacharelado">
+                    <option value="Enfermagem">
+                    <option value="Pedagogia">
+                    <option value="Núcleo Licenciaturas">
+                    <option value="Núcleo Saúde">
+                    <option value="Serviço Social">
+                </datalist>
+            </div>
+            <div class="modal-field">
+                <label>Período</label>
+                <input type="text" id="addPeriodo" placeholder="Ex: 2º (flex) e 3º">
+            </div>
+            <div class="modal-field">
+                <label>Horário</label>
+                <input type="text" id="addHorario" placeholder="Ex: 19:00-21:00">
+            </div>
+            <div class="modal-field">
+                <label>Sala</label>
+                <select id="addSala">
+                    <option value="Sala 02">Sala 02</option>
+                    <option value="Sala 03">Sala 03</option>
+                    <option value="Sala 04">Sala 04</option>
+                    <option value="Sala 05">Sala 05</option>
+                    <option value="Auditório I">Auditório I</option>
+                    <option value="Auditório II">Auditório II</option>
+                    <option value="Lab. Enfermagem">Lab. Enfermagem</option>
+                    <option value="Lab. Multidisciplinar">Lab. Multidisciplinar</option>
+                </select>
+            </div>
+            <div class="modal-field">
+                <label>Alunos</label>
+                <input type="number" id="addAlunos">
+            </div>
+            <div class="modal-field">
+                <label>Tutor</label>
+                <input type="text" id="addTutor" placeholder="Nome do tutor">
+            </div>
+            <div class="modal-field">
+                <label>Dia da semana</label>
+                <select id="addDia">
+                    <option value="segunda">Segunda</option>
+                    <option value="terca">Terça</option>
+                    <option value="quarta">Quarta</option>
+                    <option value="quinta">Quinta</option>
+                    <option value="sexta">Sexta</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeAddAulaModal()">Cancelar</button>
+                <button class="modal-btn primary" onclick="addAula()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="contactModal">
+        <div class="modal-content">
+            <h3 id="contactModalTitle">Adicionar Contato</h3>
+            <input type="hidden" id="contactId">
+            <div class="modal-field">
+                <label>Nome</label>
+                <input type="text" id="contactNome" placeholder="Ex: Financeiro">
+            </div>
+            <div class="modal-field">
+                <label>Descrição</label>
+                <input type="text" id="contactDesc" placeholder="Ex: Boletos, mensalidades">
+            </div>
+            <div class="modal-field">
+                <label>Telefone</label>
+                <input type="text" id="contactPhone" placeholder="Ex: 79 99806-2323">
+            </div>
+            <div class="modal-field">
+                <label>Ícone</label>
+                <div class="icones-seletor" id="contactIconSelector">
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-dollar-sign')" data-icon="fa-dollar-sign"><i
+                            class="fas fa-dollar-sign"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-handshake')" data-icon="fa-handshake"><i
+                            class="fas fa-handshake"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-headset')" data-icon="fa-headset"><i
+                            class="fas fa-headset"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-graduation-cap')"
+                        data-icon="fa-graduation-cap"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-chalkboard-teacher')"
+                        data-icon="fa-chalkboard-teacher"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-building')" data-icon="fa-building"><i
+                            class="fas fa-building"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-user')" data-icon="fa-user"><i
+                            class="fas fa-user"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-phone')" data-icon="fa-phone"><i
+                            class="fas fa-phone"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-envelope')" data-icon="fa-envelope"><i
+                            class="fas fa-envelope"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-whatsapp')" data-icon="fa-whatsapp"><i
+                            class="fab fa-whatsapp"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-clock')" data-icon="fa-clock"><i
+                            class="fas fa-clock"></i></div>
+                    <div class="icone-opcao" onclick="selectContactIcon('fa-calendar')" data-icon="fa-calendar"><i
+                            class="fas fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeContactModal()">Cancelar</button>
+                <button class="modal-btn primary" onclick="saveContact()">Salvar</button>
+                <button class="modal-btn danger" id="contactDeleteBtn" style="display: none;"
+                    onclick="deleteContact()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="portalModal">
+        <div class="modal-content">
+            <h3 id="portalModalTitle">Adicionar Link</h3>
+            <input type="hidden" id="portalId">
+            <div class="modal-field">
+                <label>Nome do Portal</label>
+                <input type="text" id="portalNome" placeholder="Ex: Portal do Aluno">
+            </div>
+            <div class="modal-field">
+                <label>URL</label>
+                <input type="url" id="portalUrl" placeholder="https://...">
+            </div>
+            <div class="modal-field">
+                <label>Ícone</label>
+                <div class="icones-seletor" id="portalIconSelector">
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-user-graduate')"
+                        data-icon="fa-user-graduate"><i class="fas fa-user-graduate"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-graduation-cap')"
+                        data-icon="fa-graduation-cap"><i class="fas fa-graduation-cap"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-users')" data-icon="fa-users"><i
+                            class="fas fa-users"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-chart-line')" data-icon="fa-chart-line"><i
+                            class="fas fa-chart-line"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-university')" data-icon="fa-university"><i
+                            class="fas fa-university"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-building')" data-icon="fa-building"><i
+                            class="fas fa-building"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-laptop')" data-icon="fa-laptop"><i
+                            class="fas fa-laptop"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-book')" data-icon="fa-book"><i
+                            class="fas fa-book"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-link')" data-icon="fa-link"><i
+                            class="fas fa-link"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-globe')" data-icon="fa-globe"><i
+                            class="fas fa-globe"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-cloud')" data-icon="fa-cloud"><i
+                            class="fas fa-cloud"></i></div>
+                    <div class="icone-opcao" onclick="selectPortalIcon('fa-database')" data-icon="fa-database"><i
+                            class="fas fa-database"></i></div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closePortalModal()">Cancelar</button>
+                <button class="modal-btn primary" onclick="savePortal()">Salvar</button>
+                <button class="modal-btn danger" id="portalDeleteBtn" style="display: none;"
+                    onclick="deletePortal()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="noteModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <h3 id="noteModalTitle">Nova Nota</h3>
+            <input type="hidden" id="noteId">
+            <div class="editor-toolbar">
+                <button class="editor-btn" onclick="formatText('bold')"><i class="fas fa-bold"></i></button>
+                <button class="editor-btn" onclick="formatText('italic')"><i class="fas fa-italic"></i></button>
+                <button class="editor-btn" onclick="formatText('underline')"><i class="fas fa-underline"></i></button>
+                <button class="editor-btn" onclick="formatText('insertUnorderedList')"><i
+                        class="fas fa-list-ul"></i></button>
+                <button class="editor-btn" onclick="formatText('insertOrderedList')"><i
+                        class="fas fa-list-ol"></i></button>
+                <button class="editor-btn" onclick="formatText('justifyLeft')"><i
+                        class="fas fa-align-left"></i></button>
+                <button class="editor-btn" onclick="formatText('justifyCenter')"><i
+                        class="fas fa-align-center"></i></button>
+                <button class="editor-btn" onclick="formatText('justifyRight')"><i
+                        class="fas fa-align-right"></i></button>
+                <button class="editor-btn" onclick="formatText('formatBlock', 'h2')"><i
+                        class="fas fa-heading"></i></button>
+                <button class="editor-btn" onclick="formatText('formatBlock', 'p')"><i
+                        class="fas fa-paragraph"></i></button>
+            </div>
+            <div class="modal-field">
+                <div id="noteEditor" class="editor-content" contenteditable="true"></div>
+            </div>
+            <div class="modal-field">
+                <label>Cor</label>
+                <div class="cores-seletor">
+                    <div class="cor-opcao nota-rosa" onclick="selectNoteColor('nota-rosa')" data-color="nota-rosa">
+                    </div>
+                    <div class="cor-opcao nota-azul" onclick="selectNoteColor('nota-azul')" data-color="nota-azul">
+                    </div>
+                    <div class="cor-opcao nota-verde" onclick="selectNoteColor('nota-verde')" data-color="nota-verde">
+                    </div>
+                    <div class="cor-opcao nota-amarela" onclick="selectNoteColor('nota-amarela')"
+                        data-color="nota-amarela"></div>
+                    <div class="cor-opcao nota-lilas" onclick="selectNoteColor('nota-lilas')" data-color="nota-lilas">
+                    </div>
+                    <div class="cor-opcao nota-mint" onclick="selectNoteColor('nota-mint')" data-color="nota-mint">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeNoteModal()">Cancelar</button>
+                <button class="modal-btn primary" onclick="saveNote()">Salvar</button>
+                <button class="modal-btn danger" id="deleteNoteBtn" style="display: none;"
+                    onclick="deleteCurrentNote()">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script>
+        // Configuração do Firebase (copie do seu projeto)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaaUN8W88VLQc6DDEjj-BMmQ-BDQH0qAU",
+            authDomain: "secretaria-unopar.firebaseapp.com",
+            projectId: "secretaria-unopar",
+            storageBucket: "secretaria-unopar.firebasestorage.app",
+            messagingSenderId: "61660974393",
+            appId: "1:61660974393:web:fb364a60897c5f35922ce8",
+            measurementId: "G-CH993KHKQD"
+        };
+
+        // Initialize Firebase
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log('✅ Firebase inicializado com sucesso!');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar Firebase:', error);
+            mostrarErro('Erro ao conectar com Firebase: ' + error.message);
+        }
+
+        const db = firebase.firestore();
+
+        // ========== DADOS INICIAIS ==========
+        const dadosIniciais = {
+            aulas: [
+                // Segunda
+                { curso: 'Biomedicina', periodo: '7º semestre', horario: '19:00-21:00', sala: 'Auditório I', alunos: 6, tutor: 'Wladia dos Santos Dias', dia: 'segunda', cancelada: false, justificativa: '' },
+                { curso: 'Farmácia', periodo: '6º (flex) e 7º', horario: '19:00-21:00', sala: 'Lab. Multidisciplinar', alunos: 12, tutor: 'Dilzelene Gonsalves da S. Rodrigues', dia: 'segunda', cancelada: false, justificativa: '' },
+                { curso: 'Fisioterapia', periodo: '6º (flex) e 7º', horario: '19:00-21:00', sala: 'Sala 03', alunos: 7, tutor: 'Jose Walter dos Santos Junior', dia: 'segunda', cancelada: false, justificativa: '' },
+                { curso: 'Educação Física Bacharelado', periodo: '1º semestre', horario: '19:00-21:00', sala: 'Sala 02', alunos: 10, tutor: 'Gildo Francisco dos Santos Filho', dia: 'segunda', cancelada: false, justificativa: '' },
+                { curso: 'Enfermagem', periodo: '6º (flex) e 7º', horario: '19:00-21:00', sala: 'Lab. Enfermagem', alunos: 21, tutor: 'Sheisa Alves de Barros Correa', dia: 'segunda', cancelada: false, justificativa: '' },
+                { curso: 'Pedagogia', periodo: '4º (flex) e 5º', horario: '19:00-21:00', sala: 'Sala 04', alunos: 12, tutor: 'Maria Amélia Silva Santos', dia: 'segunda', cancelada: false, justificativa: '' },
+
+                // Terça
+                { curso: 'Educação Física Bacharelado', periodo: '2º (flex) e 3º', horario: '19:00-21:00', sala: 'Sala 04', alunos: 8, tutor: 'Gildo Francisco dos Santos Filho', dia: 'terca', cancelada: false, justificativa: '' },
+                { curso: 'Enfermagem', periodo: '2º (flex) e 3º', horario: '19:00-21:00', sala: 'Auditório I', alunos: 33, tutor: 'Elaine Andrade Melo Menezes', dia: 'terca', cancelada: false, justificativa: '' },
+                { curso: 'Enfermagem', periodo: '4º (flex) e 5º', horario: '19:00-21:00', sala: 'Lab. Enfermagem', alunos: 16, tutor: 'Sheisa Alves de Barros Correa', dia: 'terca', cancelada: false, justificativa: '' },
+                { curso: 'Biomedicina', periodo: '4º (flex) e 5º', horario: '19:00-21:00', sala: 'Sala 03', alunos: 8, tutor: 'Wladia dos Santos Dias', dia: 'terca', cancelada: false, justificativa: '' },
+                { curso: 'Farmácia', periodo: '4º (flex) e 5º', horario: '19:00-21:00', sala: 'Lab. Multidisciplinar', alunos: 4, tutor: 'Dilzelene Gonsalves da S. Rodrigues', dia: 'terca', cancelada: false, justificativa: '' },
+                { curso: 'Núcleo Licenciaturas', periodo: '1º semestre', horario: '19:00-21:00', sala: 'Sala 05', alunos: 16, tutor: 'Maria Amélia Silva Santos', dia: 'terca', cancelada: false, justificativa: '' },
+                { curso: 'Educação Física Bacharelado', periodo: '4º semestre', horario: '19:00-21:40', sala: 'Sala 02', alunos: 10, tutor: 'Andréa Armas Alejo', dia: 'terca', cancelada: false, justificativa: '' },
+
+                // Quarta
+                { curso: 'Núcleo Saúde', periodo: '1º semestre', horario: '19:00-21:00', sala: 'Auditório I', alunos: 26, tutor: 'Wladia dos Santos Dias', dia: 'quarta', cancelada: false, justificativa: '' },
+                { curso: 'Educação Física Bacharelado', periodo: '6º (flex) e 7º', horario: '19:00-21:00', sala: 'Sala 03', alunos: 8, tutor: 'Andréa Armas Alejo', dia: 'quarta', cancelada: false, justificativa: '' },
+                { curso: 'Pedagogia', periodo: '2º (flex) e 3º', horario: '19:00-21:00', sala: 'Auditório II', alunos: 11, tutor: 'Maria Amélia Silva Santos', dia: 'quarta', cancelada: false, justificativa: '' },
+                { curso: 'Farmácia', periodo: '8º (flex) e 9º', horario: '19:00-21:00', sala: 'Lab. Multidisciplinar', alunos: 17, tutor: 'Dilzelene Gonsalves da S. Rodrigues', dia: 'quarta', cancelada: false, justificativa: '' },
+                { curso: 'Núcleo-Administração e Contábeis', periodo: '1º semestre', horario: '19:00-21:40', sala: 'Sala 04', alunos: 10, tutor: 'Carmen Virginia Rosenda Nunes', dia: 'quarta', cancelada: false, justificativa: '' },
+                { curso: 'Fisioterapia', periodo: '2º (flex) e 3º', horario: '19:00-21:40', sala: 'Sala 02', alunos: 4, tutor: 'José Walter dos Santos Junior', dia: 'quarta', cancelada: false, justificativa: '' },
+
+                // Quinta
+                { curso: 'Farmácia', periodo: '2º (flex) e 3º', horario: '19:00-21:00', sala: 'Lab. Multidisciplinar', alunos: 14, tutor: 'Dilzelene Gonsalves da S. Rodrigues', dia: 'quinta', cancelada: false, justificativa: '' },
+                { curso: '+ Enfermagem', periodo: '8º (flex) e 9º', horario: '19:00-21:00', sala: 'Lab. Enfermagem', alunos: 29, tutor: 'Elaine Andrade Melo Menezes', dia: 'quinta', cancelada: false, justificativa: '' },
+                { curso: 'Educação Física Bacharelado', periodo: '5º semestre', horario: '19:00-21:00', sala: 'Sala 03', alunos: 11, tutor: 'Andréa Armas Alejo', dia: 'quinta', cancelada: false, justificativa: '' },
+                { curso: 'Serviço Social', periodo: '1º semestre', horario: '19:00-21:00', sala: 'Sala 02', alunos: 7, tutor: 'Karla Santos Silva', dia: 'quinta', cancelada: false, justificativa: '' }
+            ],
+
+            contatos: [
+                { nome: 'Financeiro', desc: 'Boletos, mensalidades, negociações', phone: '79 99806-2323', icon: 'fa-dollar-sign' },
+                { nome: 'Comercial', desc: 'Matrículas, rematrículas, vendas', phone: '79 99887-96332', icon: 'fa-handshake' },
+                { nome: 'Central Unopar', desc: 'Atendimento geral', phone: '3003-4030', icon: 'fa-headset' },
+                { nome: 'ProUni', desc: 'Transferência, documentação', phone: '79 99810-1878', icon: 'fa-graduation-cap' },
+                { nome: 'Ane Rose', desc: 'Coordenação - Estágio e Acadêmico', phone: '79 99824-7442', icon: 'fa-chalkboard-teacher' },
+                { nome: 'Secretaria', desc: 'Polo Santo Antônio', phone: '79 96572-2222', icon: 'fa-building' }
+            ],
+
+            portais: [
+                { nome: 'Portal Antigo', url: 'https://www.unopar.com.br', icon: 'fa-user-graduate' },
+                { nome: 'Portal Novo', url: 'https://login.unopar.br', icon: 'fa-graduation-cap' },
+                { nome: 'Colaborar', url: 'https://colaborar.unopar.br', icon: 'fa-users' },
+                { nome: 'Prisma', url: 'https://prisma.unopar.br', icon: 'fa-chart-line' },
+                { nome: 'Anhanguera', url: 'https://www.anhanguera.com', icon: 'fa-university' },
+                { nome: 'Kroton', url: 'https://www.kroton.com.br', icon: 'fa-building' },
+                { nome: 'AVA', url: 'https://ava.unopar.br', icon: 'fa-laptop' },
+                { nome: 'Biblioteca', url: 'https://biblioteca.unopar.br', icon: 'fa-book' }
+            ],
+
+            notas: [
+                { content: 'Bem-vinda ao sistema! 🎉 Esta é uma nota de teste.', color: 'nota-rosa', date: new Date().toLocaleDateString('pt-BR') + ' - Agora' }
+            ]
+        };
+
+        // Função para popular o banco se estiver vazio
+        async function inicializarBanco() {
+            console.log('🔄 Verificando banco de dados...');
+
+            // Verificar aulas
+            const aulasSnapshot = await db.collection('aulas').get();
+            if (aulasSnapshot.empty) {
+                console.log('📚 Inserindo aulas iniciais...');
+                for (const aula of dadosIniciais.aulas) {
+                    await db.collection('aulas').add(aula);
+                }
+            }
+
+            // Verificar contatos
+            const contatosSnapshot = await db.collection('contatos').get();
+            if (contatosSnapshot.empty) {
+                console.log('👥 Inserindo contatos iniciais...');
+                for (const contato of dadosIniciais.contatos) {
+                    await db.collection('contatos').add(contato);
+                }
+            }
+
+            // Verificar portais
+            const portaisSnapshot = await db.collection('portais').get();
+            if (portaisSnapshot.empty) {
+                console.log('🔗 Inserindo portais iniciais...');
+                for (const portal of dadosIniciais.portais) {
+                    await db.collection('portais').add(portal);
+                }
+            }
+
+            // Verificar notas
+            const notasSnapshot = await db.collection('notas').get();
+            if (notasSnapshot.empty) {
+                console.log('📝 Inserindo notas iniciais...');
+                for (const nota of dadosIniciais.notas) {
+                    await db.collection('notas').add(nota);
+                }
+            }
+
+            console.log('✅ Banco inicializado!');
+        }
+
+        // Variáveis globais
+        let aulas = [];
+        let contatos = [];
+        let portais = [];
+        let notas = [];
+        let currentAulaId = null;
+        let currentPortalId = null;
+        let currentContactId = null;
+        let currentNoteId = null;
+        let selectedContactIcon = 'fa-user';
+        let selectedPortalIcon = 'fa-link';
+        let selectedNoteColor = 'nota-rosa';
+        let dadosCarregados = 0;
+        const totalCarregamentos = 4;
+        let notificacoes = {
+            dashboard: 0,
+            calendario: 0,
+            contatos: 0,
+            biblioteca: 0,
+            suporte: 0,
+            total: 0,
+            fila: []
+        };
+
+        function mostrarErro(mensagem) {
+            document.getElementById('loadingError').style.display = 'block';
+            document.getElementById('loadingError').innerHTML = '❌ ' + mensagem;
+            document.getElementById('retryButton').style.display = 'block';
+            document.querySelector('.loading-text').innerHTML = 'Erro ao carregar';
+        }
+
+        function showToast(title, message, badge, page, id) {
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = message;
+            document.getElementById('toastBadge').innerText = badge;
+            document.getElementById('toast').setAttribute('data-page', page);
+            document.getElementById('toast').setAttribute('data-id', id || '');
+            document.getElementById('toast').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('toast').style.display = 'none';
+            }, 5000);
+        }
+
+        function closeToast() {
+            document.getElementById('toast').style.display = 'none';
+        }
+
+        function handleToastClick() {
+            const toast = document.getElementById('toast');
+            const page = toast.getAttribute('data-page');
+            const id = toast.getAttribute('data-id');
+
+            if (page) {
+                if (page === 'contatos') {
+                    window.location.href = 'contatos.html' + (id ? '?id=' + id : '');
+                } else {
+                    switchToPage(page);
+
+                    if (id) {
+                        setTimeout(() => {
+                            if (page === 'calendario') openEditAulaModal(id);
+                            if (page === 'dashboard') {
+                                const portal = portais.find(p => p.id === id);
+                                if (portal) openEditPortalModal(id);
+                            }
+                        }, 300);
+                    }
+                }
+            }
+
+            closeToast();
+        }
+
+        function showInfoModal(title, message) {
+            document.getElementById('infoModalTitle').innerText = title;
+            document.getElementById('infoModalMessage').innerText = message;
+            document.getElementById('infoModal').classList.add('active');
+        }
+
+        function closeInfoModal() {
+            document.getElementById('infoModal').classList.remove('active');
+        }
+
+        function showEditInfo() {
+            showInfoModal('Editar Aula', 'Clique em uma aula específica na tabela para editar');
+        }
+
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('noteEditor').focus();
+        }
+
+        function switchToPage(pageId) {
+            document.querySelectorAll('.nav-page').forEach(btn => {
+                if (btn.dataset.page === pageId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            if (pageId === 'dashboard') {
+                notificacoes.dashboard = 0;
+                notificacoes.fila = notificacoes.fila.filter(n => n.page !== 'dashboard');
+            }
+            if (pageId === 'calendario') {
+                notificacoes.calendario = 0;
+                notificacoes.fila = notificacoes.fila.filter(n => n.page !== 'calendario');
+            }
+            if (pageId === 'contatos') {
+                notificacoes.contatos = 0;
+                notificacoes.fila = notificacoes.fila.filter(n => n.page !== 'contatos');
+            }
+
+            atualizarNotificacoes();
+        }
+
+        function notificar(tipo, item, itemId) {
+            let page = 'dashboard';
+            let titulo = '';
+            let mensagem = '';
+            let badge = '';
+            let id = itemId || '';
+
+            if (tipo === 'aula') {
+                notificacoes.calendario++;
+                page = 'calendario';
+                titulo = '📚 Nova Aula';
+                mensagem = `${item.curso} - ${item.sala}`;
+                badge = 'Calendário';
+                id = itemId;
+            }
+            if (tipo === 'contato') {
+                notificacoes.contatos++;
+                page = 'contatos';
+                titulo = '👤 Novo Contato';
+                mensagem = `${item.nome} - ${item.phone}`;
+                badge = 'Contatos';
+                id = itemId;
+            }
+            if (tipo === 'portal') {
+                notificacoes.dashboard++;
+                page = 'dashboard';
+                titulo = '🔗 Novo Link';
+                mensagem = item.nome;
+                badge = 'Acesso Rápido';
+                id = itemId;
+            }
+            if (tipo === 'nota') {
+                notificacoes.dashboard++;
+                page = 'dashboard';
+                titulo = '📝 Nova Nota';
+                mensagem = 'Uma nova nota foi adicionada';
+                badge = 'Bloco de Notas';
+            }
+
+            notificacoes.total = notificacoes.calendario + notificacoes.contatos + notificacoes.dashboard;
+
+            notificacoes.fila.push({
+                page: page,
+                mensagem: mensagem,
+                titulo: titulo,
+                id: id
+            });
+
+            showToast(titulo, mensagem, badge, page, id);
+
+            atualizarNotificacoes();
+        }
+
+        function showNextNotification() {
+            if (notificacoes.fila.length > 0) {
+                const next = notificacoes.fila[0];
+
+                if (next.page === 'contatos') {
+                    window.location.href = 'contatos.html' + (next.id ? '?id=' + next.id : '');
+                } else {
+                    switchToPage(next.page);
+
+                    if (next.id) {
+                        setTimeout(() => {
+                            if (next.page === 'calendario') openEditAulaModal(next.id);
+                            if (next.page === 'dashboard') {
+                                const portal = portais.find(p => p.id === next.id);
+                                if (portal) openEditPortalModal(next.id);
+                            }
+                        }, 300);
+                    }
+                }
+
+                notificacoes.fila.shift();
+                atualizarNotificacoes();
+            }
+        }
+
+        function atualizarNotificacoes() {
+            document.getElementById('notifCalendario').style.display = notificacoes.calendario > 0 ? 'block' : 'none';
+            document.getElementById('notifDashboard').style.display = notificacoes.dashboard > 0 ? 'block' : 'none';
+
+            if (notificacoes.total > 0) {
+                document.getElementById('globalNotifCount').style.display = 'flex';
+                document.getElementById('globalNotifCount').innerText = notificacoes.total;
+            } else {
+                document.getElementById('globalNotifCount').style.display = 'none';
+            }
+        }
+
+        async function carregarDados() {
+            console.log('📥 Iniciando carregamento dos dados...');
+
+            await inicializarBanco();
+
+            db.collection('aulas').onSnapshot((snapshot) => {
+                const antigas = aulas.length;
+                aulas = [];
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added' && dadosCarregados >= totalCarregamentos) {
+                        const aula = change.doc.data();
+                        notificar('aula', aula, change.doc.id);
+                    }
+                });
+                snapshot.forEach(doc => {
+                    aulas.push({ id: doc.id, ...doc.data() });
+                });
+                if (antigas === 0 && aulas.length > 0) {
+                    dadosCarregados++;
+                    verificarCarregamento();
+                }
+                renderTodayCalendar();
+                renderFullCalendar();
+                loadCancelSelect();
+            });
+
+            db.collection('contatos').onSnapshot((snapshot) => {
+                const antigas = contatos.length;
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added' && dadosCarregados >= totalCarregamentos) {
+                        const contato = change.doc.data();
+                        notificar('contato', contato, change.doc.id);
+                    }
+                });
+                contatos = [];
+                snapshot.forEach(doc => {
+                    contatos.push({ id: doc.id, ...doc.data() });
+                });
+                if (antigas === 0 && contatos.length > 0) {
+                    dadosCarregados++;
+                    verificarCarregamento();
+                }
+                renderQuickContacts();
+            });
+
+            db.collection('portais').onSnapshot((snapshot) => {
+                const antigas = portais.length;
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added' && dadosCarregados >= totalCarregamentos) {
+                        const portal = change.doc.data();
+                        notificar('portal', portal, change.doc.id);
+                    }
+                });
+                portais = [];
+                snapshot.forEach(doc => {
+                    portais.push({ id: doc.id, ...doc.data() });
+                });
+                if (antigas === 0 && portais.length > 0) {
+                    dadosCarregados++;
+                    verificarCarregamento();
+                }
+                renderQuickPortals();
+            });
+
+            db.collection('notas').onSnapshot((snapshot) => {
+                const antigas = notas.length;
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added' && dadosCarregados >= totalCarregamentos) {
+                        notificar('nota', {}, change.doc.id);
+                    }
+                });
+                notas = [];
+                snapshot.forEach(doc => {
+                    notas.push({ id: doc.id, ...doc.data() });
+                });
+                if (antigas === 0 && notas.length > 0) {
+                    dadosCarregados++;
+                    verificarCarregamento();
+                }
+                renderNotas();
+            });
+        }
+
+        function verificarCarregamento() {
+            if (dadosCarregados >= totalCarregamentos) {
+                console.log('✅ Todos dados carregados!');
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('appContent').style.display = 'flex';
+            }
+        }
+
+        document.querySelectorAll('.nav-page').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nav-page').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(btn.dataset.page).classList.add('active');
+
+                if (btn.dataset.page === 'dashboard') {
+                    notificacoes.dashboard = 0;
+                    notificacoes.fila = notificacoes.fila.filter(n => n.page !== 'dashboard');
+                }
+                if (btn.dataset.page === 'calendario') {
+                    notificacoes.calendario = 0;
+                    notificacoes.fila = notificacoes.fila.filter(n => n.page !== 'calendario');
+                }
+
+                atualizarNotificacoes();
+            });
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            document.getElementById('currentDate').innerHTML = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+            document.getElementById('currentTime').innerHTML = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        const userName = localStorage.getItem('username') || sessionStorage.getItem('username') || 'Equipe';
+        document.getElementById('userName').textContent = userName;
+
+        carregarDados();
+
+        setTimeout(() => {
+            if (dadosCarregados < totalCarregamentos) {
+                mostrarErro('Tempo limite excedido. Verifique as coleções no Firestore.');
+            }
+        }, 10000);
+
+        // ========== FUNÇÕES DE RENDERIZAÇÃO ==========
+
+        function renderTodayCalendar() {
+            const hoje = new Date().getDay();
+            const dias = { 1: 'segunda', 2: 'terca', 3: 'quarta', 4: 'quinta', 5: 'sexta', 6: 'sabado', 0: 'domingo' };
+            const diaHoje = dias[hoje];
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+            const aulasHoje = aulas.filter(a => a && a.dia === diaHoje);
+            const totalAtivas = aulasHoje.filter(a => a && !a.cancelada).length;
+
+            let html = `
+                <div class="calendario-header">
+                    <div class="dia-info">
+                        <span class="dia-nome">${diaHoje ? diaHoje.toUpperCase() : 'HOJE'}</span>
+                        <span class="dia-data">${new Date().getDate()} de ${months[new Date().getMonth()]}</span>
+                    </div>
+                    <span class="contador-aulas">${totalAtivas} aulas</span>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="tabela-aulas">
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Período</th>
+                                <th>Horário</th>
+                                <th>Sala</th>
+                                <th>Alunos</th>
+                                <th>Tutor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (!aulasHoje || aulasHoje.length === 0) {
+                html += `<tr><td colspan="7" style="text-align:center; padding:2rem;"><i class="fas fa-calendar-check" style="font-size:2rem; color:var(--text-light); margin-bottom:0.5rem; display:block;"></i>Nenhuma aula hoje</td></tr>`;
+            } else {
+                aulasHoje.forEach(aula => {
+                    html += `
+                        <tr class="${aula.cancelada ? 'cancelada' : ''}" onclick="openEditAulaModal('${aula.id}')">
+                            <td><span class="curso-nome">${aula.curso || ''}</span></td>
+                            <td>${aula.periodo || ''}</td>
+                            <td><strong>${aula.horario || ''}</strong></td>
+                            <td><span class="sala-badge">${aula.sala || ''}</span></td>
+                            <td>${aula.alunos || 0}</td>
+                            <td>${aula.tutor || ''}</td>
+                            <td>
+                                ${aula.cancelada ?
+                            `<span class="cancelada-badge"><i class="fas fa-ban"></i> Cancelada</span>` :
+                            '<span style="color:var(--secondary); font-weight:600;">Ativa</span>'}
+                                ${aula.justificativa ? `<br><small style="color:#666;">${aula.justificativa}</small>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `</tbody></table></div>`;
+            document.getElementById('todayCalendar').innerHTML = html;
+        }
+
+        function renderQuickContacts() {
+            let html = '';
+            if (!contatos || contatos.length === 0) {
+                html = '<p style="text-align:center; padding:1rem;">Nenhum contato</p>';
+            } else {
+                contatos.slice(0, 4).forEach(c => {
+                    html += `
+                        <div class="contato-card-dash">
+                            <div class="contato-icone-dash"><i class="fas ${c.icon || 'fa-user'}"></i></div>
+                            <div class="contato-info-dash">
+                                <div class="contato-nome-dash">${c.nome || ''}</div>
+                                <div class="contato-desc-dash">${c.desc || ''}</div>
+                                <div class="contato-phone-dash">${c.phone || ''}</div>
+                            </div>
+                            <div class="contato-actions-dash">
+                                <div class="contato-edit-dash" onclick="openEditContactModal('${c.id}')">
+                                    <i class="fas fa-pen"></i>
+                                </div>
+                                <div class="contato-wpp-dash" onclick="event.stopPropagation(); window.open('https://wa.me/55${(c.phone || '').replace(/\D/g, '')}', '_blank')">
+                                    <i class="fab fa-whatsapp"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('quickContacts').innerHTML = html;
+        }
+
+        function renderQuickPortals() {
+            let html = '';
+            if (!portais || portais.length === 0) {
+                html = '<p style="text-align:center; padding:1rem;">Nenhum portal</p>';
+            } else {
+                portais.forEach(p => {
+                    html += `
+                        <a href="${p.url || '#'}" target="_blank" class="portal-item-horizontal">
+                            <div class="portal-icone-horizontal"><i class="fas ${p.icon || 'fa-link'}"></i></div>
+                            <span class="portal-nome-horizontal">${p.nome || ''}</span>
+                            <div class="portal-edit-horizontal" onclick="event.preventDefault(); event.stopPropagation(); openEditPortalModal('${p.id}')">
+                                <i class="fas fa-pen"></i>
+                            </div>
+                        </a>
+                    `;
+                });
+            }
+            document.getElementById('quickPortals').innerHTML = html;
+        }
+
+        function renderNotas() {
+            let html = '';
+            if (!notas || notas.length === 0) {
+                html = '<p style="text-align:center; padding:1rem;">Nenhuma nota</p>';
+            } else {
+                notas.forEach(nota => {
+                    html += `
+                        <div class="nota-card ${nota.color || 'nota-rosa'}" onclick="openEditNoteModal('${nota.id}')">
+                            <div class="nota-conteudo">${nota.content || ''}</div>
+                            <div class="nota-footer">
+                                <span><i class="far fa-clock"></i> ${nota.date || ''}</span>
+                                <div class="nota-acoes">
+                                    <i class="fas fa-paint-brush" onclick="event.stopPropagation(); changeNoteColor('${nota.id}')"></i>
+                                    <i class="fas fa-trash" onclick="event.stopPropagation(); deleteNote('${nota.id}')"></i>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('notasGrid').innerHTML = html;
+        }
+
+        function renderFullCalendar() {
+            const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta'];
+            let html = '';
+
+            if (!aulas || aulas.length === 0) {
+                html = '<p>Nenhuma aula cadastrada.</p>';
+            } else {
+                dias.forEach(dia => {
+                    const aulasDia = aulas.filter(a => a && a.dia === dia && !a.cancelada);
+                    if (aulasDia.length > 0) {
+                        html += `<h4 style="margin:1.5rem 0 0.5rem; color:var(--primary); text-transform:capitalize;">${dia}</h4>`;
+                        html += `<table class="tabela-aulas" style="margin-bottom:1rem;"><tbody>`;
+                        aulasDia.forEach(aula => {
+                            html += `
+                                <tr onclick="openEditAulaModal('${aula.id}')">
+                                    <td><span class="curso-nome">${aula.curso || ''}</span></td>
+                                    <td>${aula.periodo || ''}</td>
+                                    <td>${aula.horario || ''}</td>
+                                    <td><span class="sala-badge">${aula.sala || ''}</span></td>
+                                    <td>${aula.alunos || 0}</td>
+                                    <td>${aula.tutor || ''}</td>
+                                </tr>
+                            `;
+                        });
+                        html += `</tbody></table>`;
+                    }
+                });
+            }
+
+            document.getElementById('fullCalendar').innerHTML = html || '<p>Nenhuma aula cadastrada.</p>';
+        }
+
+        function loadCancelSelect() {
+            let options = '';
+            aulas.forEach(aula => {
+                if (aula) {
+                    options += `<option value="${aula.id}" data-cancelada="${aula.cancelada}">${aula.curso || ''} - ${aula.sala || ''} - ${aula.horario || ''}</option>`;
+                }
+            });
+            document.getElementById('cancelAulaSelect').innerHTML = options || '<option value="">Nenhuma aula</option>';
+
+            document.getElementById('cancelAulaSelect').addEventListener('change', function () {
+                const selected = this.options[this.selectedIndex];
+                const cancelada = selected.getAttribute('data-cancelada') === 'true';
+                document.getElementById('cancelStatusAtual').innerHTML = cancelada ?
+                    '<span style="color:#DC2626;">Cancelada</span>' :
+                    '<span style="color:var(--success);">Ativa</span>';
+            });
+
+            if (document.getElementById('cancelAulaSelect').options.length > 0) {
+                const event = new Event('change');
+                document.getElementById('cancelAulaSelect').dispatchEvent(event);
+            }
+        }
+
+        // ========== FUNÇÕES DE MODAL ==========
+
+        function openCancelModal() {
+            loadCancelSelect();
+            document.getElementById('cancelModal').classList.add('active');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.remove('active');
+            document.getElementById('cancelJustificativa').value = '';
+        }
+
+        async function toggleCancelAula() {
+            const id = document.getElementById('cancelAulaSelect').value;
+            const just = document.getElementById('cancelJustificativa').value;
+            const aula = aulas.find(a => a.id === id);
+
+            if (aula) {
+                await db.collection('aulas').doc(id).update({
+                    cancelada: !aula.cancelada,
+                    justificativa: !aula.cancelada ? just : ''
+                });
+            }
+
+            closeCancelModal();
+        }
+
+        function openAddAulaModal() {
+            document.getElementById('addCurso').value = '';
+            document.getElementById('addPeriodo').value = '';
+            document.getElementById('addHorario').value = '';
+            document.getElementById('addSala').value = 'Sala 02';
+            document.getElementById('addAlunos').value = 0;
+            document.getElementById('addTutor').value = '';
+            document.getElementById('addDia').value = 'segunda';
+            document.getElementById('addAulaModal').classList.add('active');
+        }
+
+        function closeAddAulaModal() {
+            document.getElementById('addAulaModal').classList.remove('active');
+        }
+
+        async function addAula() {
+            const novaAula = {
+                curso: document.getElementById('addCurso').value,
+                periodo: document.getElementById('addPeriodo').value,
+                horario: document.getElementById('addHorario').value,
+                sala: document.getElementById('addSala').value,
+                alunos: parseInt(document.getElementById('addAlunos').value) || 0,
+                tutor: document.getElementById('addTutor').value,
+                dia: document.getElementById('addDia').value,
+                cancelada: false,
+                justificativa: ''
+            };
+
+            await db.collection('aulas').add(novaAula);
+            closeAddAulaModal();
+        }
+
+        function openEditAulaModal(id) {
+            const aula = aulas.find(a => a.id === id);
+            if (aula) {
+                currentAulaId = id;
+                document.getElementById('editAulaId').value = id;
+                document.getElementById('editCurso').value = aula.curso || '';
+                document.getElementById('editPeriodo').value = aula.periodo || '';
+                document.getElementById('editHorario').value = aula.horario || '';
+                document.getElementById('editSala').value = aula.sala || '';
+                document.getElementById('editAlunos').value = aula.alunos || 0;
+                document.getElementById('editTutor').value = aula.tutor || '';
+                document.getElementById('editDia').value = aula.dia || 'segunda';
+                document.getElementById('editAulaModal').classList.add('active');
+            }
+        }
+
+        function closeEditAulaModal() {
+            document.getElementById('editAulaModal').classList.remove('active');
+        }
+
+        async function saveAula() {
+            await db.collection('aulas').doc(currentAulaId).update({
+                curso: document.getElementById('editCurso').value,
+                periodo: document.getElementById('editPeriodo').value,
+                horario: document.getElementById('editHorario').value,
+                sala: document.getElementById('editSala').value,
+                alunos: parseInt(document.getElementById('editAlunos').value) || 0,
+                tutor: document.getElementById('editTutor').value,
+                dia: document.getElementById('editDia').value
+            });
+            closeEditAulaModal();
+        }
+
+        async function deleteAula() {
+            if (confirm('Excluir esta aula?')) {
+                await db.collection('aulas').doc(currentAulaId).delete();
+                closeEditAulaModal();
+            }
+        }
+
+        function openAddContactModal() {
+            currentContactId = null;
+            document.getElementById('contactModalTitle').innerText = 'Adicionar Contato';
+            document.getElementById('contactId').value = '';
+            document.getElementById('contactNome').value = '';
+            document.getElementById('contactDesc').value = '';
+            document.getElementById('contactPhone').value = '';
+            document.getElementById('contactDeleteBtn').style.display = 'none';
+            selectedContactIcon = 'fa-user';
+            document.querySelectorAll('#contactIconSelector .icone-opcao').forEach(icone => icone.classList.remove('selecionado'));
+            document.querySelector('#contactIconSelector [data-icon="fa-user"]').classList.add('selecionado');
+            document.getElementById('contactModal').classList.add('active');
+        }
+
+        function openEditContactModal(id) {
+            const contato = contatos.find(c => c.id === id);
+            if (contato) {
+                currentContactId = id;
+                document.getElementById('contactModalTitle').innerText = 'Editar Contato';
+                document.getElementById('contactId').value = id;
+                document.getElementById('contactNome').value = contato.nome || '';
+                document.getElementById('contactDesc').value = contato.desc || '';
+                document.getElementById('contactPhone').value = contato.phone || '';
+                document.getElementById('contactDeleteBtn').style.display = 'block';
+                selectedContactIcon = contato.icon || 'fa-user';
+                document.querySelectorAll('#contactIconSelector .icone-opcao').forEach(icone => icone.classList.remove('selecionado'));
+                const iconeEl = document.querySelector(`#contactIconSelector [data-icon="${contato.icon}"]`);
+                if (iconeEl) iconeEl.classList.add('selecionado');
+                document.getElementById('contactModal').classList.add('active');
+            }
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.remove('active');
+        }
+
+        function selectContactIcon(icon) {
+            selectedContactIcon = icon;
+            document.querySelectorAll('#contactIconSelector .icone-opcao').forEach(icone => icone.classList.remove('selecionado'));
+            event.currentTarget.classList.add('selecionado');
+        }
+
+        async function saveContact() {
+            const nome = document.getElementById('contactNome').value;
+            const desc = document.getElementById('contactDesc').value;
+            const phone = document.getElementById('contactPhone').value;
+
+            if (nome && phone) {
+                const data = {
+                    nome: nome,
+                    desc: desc,
+                    phone: phone,
+                    icon: selectedContactIcon
+                };
+
+                if (currentContactId) {
+                    await db.collection('contatos').doc(currentContactId).update(data);
+                } else {
+                    await db.collection('contatos').add(data);
+                }
+
+                closeContactModal();
+            }
+        }
+
+        async function deleteContact() {
+            if (currentContactId && confirm('Excluir este contato?')) {
+                await db.collection('contatos').doc(currentContactId).delete();
+                closeContactModal();
+            }
+        }
+
+        function openAddPortalModal() {
+            currentPortalId = null;
+            document.getElementById('portalModalTitle').innerText = 'Adicionar Link';
+            document.getElementById('portalId').value = '';
+            document.getElementById('portalNome').value = '';
+            document.getElementById('portalUrl').value = '';
+            selectedPortalIcon = 'fa-link';
+            document.querySelectorAll('#portalIconSelector .icone-opcao').forEach(icone => icone.classList.remove('selecionado'));
+            document.getElementById('portalDeleteBtn').style.display = 'none';
+            document.getElementById('portalModal').classList.add('active');
+        }
+
+        function openEditPortalModal(id) {
+            const portal = portais.find(p => p.id === id);
+            if (portal) {
+                currentPortalId = id;
+                document.getElementById('portalModalTitle').innerText = 'Editar Link';
+                document.getElementById('portalId').value = id;
+                document.getElementById('portalNome').value = portal.nome || '';
+                document.getElementById('portalUrl').value = portal.url || '';
+                selectedPortalIcon = portal.icon || 'fa-link';
+                document.querySelectorAll('#portalIconSelector .icone-opcao').forEach(icone => icone.classList.remove('selecionado'));
+                const iconeEl = document.querySelector(`#portalIconSelector [data-icon="${portal.icon}"]`);
+                if (iconeEl) iconeEl.classList.add('selecionado');
+                document.getElementById('portalDeleteBtn').style.display = 'block';
+                document.getElementById('portalModal').classList.add('active');
+            }
+        }
+
+        function closePortalModal() {
+            document.getElementById('portalModal').classList.remove('active');
+        }
+
+        function selectPortalIcon(icon) {
+            selectedPortalIcon = icon;
+            document.querySelectorAll('#portalIconSelector .icone-opcao').forEach(icone => icone.classList.remove('selecionado'));
+            event.currentTarget.classList.add('selecionado');
+        }
+
+        async function savePortal() {
+            const nome = document.getElementById('portalNome').value;
+            const url = document.getElementById('portalUrl').value;
+
+            if (nome && url) {
+                const data = {
+                    nome: nome,
+                    url: url,
+                    icon: selectedPortalIcon
+                };
+
+                if (currentPortalId) {
+                    await db.collection('portais').doc(currentPortalId).update(data);
+                } else {
+                    await db.collection('portais').add(data);
+                }
+
+                closePortalModal();
+            }
+        }
+
+        async function deletePortal() {
+            if (currentPortalId && confirm('Excluir este link?')) {
+                await db.collection('portais').doc(currentPortalId).delete();
+                closePortalModal();
+            }
+        }
+
+        function openNewNoteModal() {
+            currentNoteId = null;
+            document.getElementById('noteModalTitle').innerText = 'Nova Nota';
+            document.getElementById('noteId').value = '';
+            document.getElementById('noteEditor').innerHTML = '';
+            selectedNoteColor = 'nota-rosa';
+            document.getElementById('noteEditor').style.backgroundColor = '#FFE9F0';
+            document.querySelectorAll('#noteModal .cor-opcao').forEach(c => c.classList.remove('selecionada'));
+            document.querySelector('#noteModal .cor-opcao[data-color="nota-rosa"]').classList.add('selecionada');
+            document.getElementById('deleteNoteBtn').style.display = 'none';
+            document.getElementById('noteModal').classList.add('active');
+        }
+
+        function openEditNoteModal(id) {
+            const nota = notas.find(n => n.id === id);
+            if (nota) {
+                currentNoteId = id;
+                document.getElementById('noteModalTitle').innerText = 'Editar Nota';
+                document.getElementById('noteId').value = id;
+                document.getElementById('noteEditor').innerHTML = nota.content || '';
+                selectedNoteColor = nota.color || 'nota-rosa';
+
+                const cores = {
+                    'nota-rosa': '#FFE9F0',
+                    'nota-azul': '#E6F3FF',
+                    'nota-verde': '#E3F7E9',
+                    'nota-amarela': '#FFF8E7',
+                    'nota-lilas': '#F3E8FF',
+                    'nota-mint': '#E0F7F0'
+                };
+                document.getElementById('noteEditor').style.backgroundColor = cores[nota.color] || '#FFE9F0';
+
+                document.querySelectorAll('#noteModal .cor-opcao').forEach(c => c.classList.remove('selecionada'));
+                const corEl = document.querySelector(`#noteModal .cor-opcao[data-color="${nota.color}"]`);
+                if (corEl) corEl.classList.add('selecionada');
+                document.getElementById('deleteNoteBtn').style.display = 'block';
+                document.getElementById('noteModal').classList.add('active');
+            }
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.remove('active');
+        }
+
+        function selectNoteColor(color) {
+            selectedNoteColor = color;
+            document.querySelectorAll('#noteModal .cor-opcao').forEach(c => c.classList.remove('selecionada'));
+            event.currentTarget.classList.add('selecionada');
+
+            const cores = {
+                'nota-rosa': '#FFE9F0',
+                'nota-azul': '#E6F3FF',
+                'nota-verde': '#E3F7E9',
+                'nota-amarela': '#FFF8E7',
+                'nota-lilas': '#F3E8FF',
+                'nota-mint': '#E0F7F0'
+            };
+            document.getElementById('noteEditor').style.backgroundColor = cores[color];
+        }
+
+        async function saveNote() {
+            const content = document.getElementById('noteEditor').innerHTML.trim();
+            if (content) {
+                const now = new Date();
+                const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = `${now.toLocaleDateString('pt-BR')} - ${time}`;
+
+                const data = {
+                    content: content,
+                    color: selectedNoteColor,
+                    date: dateStr
+                };
+
+                if (currentNoteId) {
+                    await db.collection('notas').doc(currentNoteId).update(data);
+                } else {
+                    await db.collection('notas').add(data);
+                }
+
+                closeNoteModal();
+            }
+        }
+
+        async function deleteCurrentNote() {
+            if (currentNoteId && confirm('Excluir esta nota?')) {
+                await db.collection('notas').doc(currentNoteId).delete();
+                closeNoteModal();
+            }
+        }
+
+        async function deleteNote(id) {
+            if (confirm('Excluir esta nota?')) {
+                await db.collection('notas').doc(id).delete();
+            }
+        }
+
+        function filterNotas() {
+            const search = document.getElementById('notaSearch').value.toLowerCase();
+            document.querySelectorAll('.nota-card').forEach(card => {
+                const content = card.querySelector('.nota-conteudo')?.textContent.toLowerCase() || '';
+                card.style.display = content.includes(search) ? 'block' : 'none';
+            });
+        }
+
+        async function changeNoteColor(id) {
+            const cores = ['nota-rosa', 'nota-azul', 'nota-verde', 'nota-amarela', 'nota-lilas', 'nota-mint'];
+            const nota = notas.find(n => n.id === id);
+            if (nota) {
+                const i = cores.indexOf(nota.color);
+                const novaCor = cores[(i + 1) % cores.length];
+                await db.collection('notas').doc(id).update({ color: novaCor });
+            }
+        }
+    </script>
+</body>
+
+</html>

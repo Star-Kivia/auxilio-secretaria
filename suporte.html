@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Suporte TI · Mini Tutoriais · Unopar</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <!-- Fontes e ícones -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0A2342;
+            --primary-light: #1E3A5F;
+            --secondary: #FF6B35;
+            --secondary-light: #FF8A5C;
+            --bg: #FFF9F5;
+            --surface: #FFFFFF;
+            --text: #2D3E50;
+            --text-soft: #5A6B7A;
+            --text-light: #8A9AA8;
+            --border: #FFE4D6;
+            --shadow-sm: 0 4px 12px rgba(255, 107, 53, 0.05);
+
+            --energy: #FF6B35;
+            --energy-bg: #FFF1EB;
+            --video: #3B82F6;
+            --video-bg: #EFF6FF;
+            --network: #10B981;
+            --network-bg: #E7F5EF;
+            --windows: #8B5CF6;
+            --windows-bg: #F3EEFF;
+            --peripheral: #EC4899;
+            --peripheral-bg: #FCE7F3;
+            --hardware: #F59E0B;
+            --hardware-bg: #FEF3C7;
+            --command: #64748B;
+            --command-bg: #F1F5F9;
+
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        *::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 20px;
+        }
+
+        .app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header estilo contatos */
+        .header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--border);
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.6rem;
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 768px) {
+            .header {
+                padding: 0.8rem 1.5rem;
+            }
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            box-shadow: 0 6px 12px rgba(10, 35, 66, 0.15);
+        }
+
+        .brand-text h1 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .brand-text p {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        /* Seção de pesquisa */
+        .search-section {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.5rem;
+            max-width: 500px;
+            margin-left: auto;
+        }
+
+        .search-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            padding: 0.2rem 0.2rem 0.2rem 1rem;
+            transition: all 0.2s;
+            min-width: 0;
+        }
+
+        .search-wrapper:focus-within {
+            border-color: var(--secondary);
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-wrapper i {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .search-wrapper input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            background: transparent;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.3rem;
+            outline: none;
+            color: var(--text);
+            width: 100%;
+        }
+
+        .search-wrapper input::placeholder {
+            color: var(--text-light);
+        }
+
+        /* Botão voltar */
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg);
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-soft);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .back-btn i {
+            color: var(--secondary);
+        }
+
+        /* Info de data/hora e usuário */
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .datetime {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: var(--bg);
+            border-radius: 40px;
+            font-size: 0.8rem;
+            color: var(--text-soft);
+            border: 1px solid var(--border);
+        }
+
+        .datetime i {
+            color: var(--secondary);
+            font-size: 0.75rem;
+        }
+
+        .user-greeting {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.4rem 1rem;
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            border-radius: 40px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.8rem;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+        }
+
+        /* Container */
+        .ti-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* Hero Section */
+        .ti-hero {
+            background: linear-gradient(145deg, var(--primary), var(--primary-light));
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media (min-width: 768px) {
+            .ti-hero {
+                padding: 2rem 2.5rem;
+            }
+        }
+
+        .ti-hero h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .ti-hero h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        .ti-hero p {
+            font-size: 0.9rem;
+            opacity: 0.95;
+            max-width: 600px;
+        }
+
+        .ti-hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        /* Barra de Pesquisa */
+        .ti-search {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ti-search-header {
+            padding: 0.8rem;
+            border-bottom: 2px solid var(--border);
+            background: rgba(255, 107, 53, 0.02);
+        }
+
+        .ti-search-header h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--primary);
+        }
+
+        .ti-search-header h3 i {
+            color: var(--secondary);
+            font-size: 1rem;
+            background: rgba(255, 107, 53, 0.1);
+            padding: 0.2rem;
+            border-radius: 8px;
+        }
+
+        .ti-search-content {
+            padding: 0.8rem;
+        }
+
+        .search-wrapper-ti {
+            position: relative;
+            margin-bottom: 0.8rem;
+        }
+
+        .search-wrapper-ti i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .search-wrapper-ti input {
+            width: 100%;
+            padding: 0.7rem 1rem 0.7rem 2.5rem;
+            border: 2px solid var(--border);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            background: var(--bg);
+            transition: all 0.3s;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        .search-wrapper-ti input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .search-stats {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 0.8rem;
+        }
+
+        /* Tags */
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .search-tag {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .search-tag i {
+            color: var(--secondary);
+            font-size: 0.7rem;
+        }
+
+        .search-tag:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+            transform: translateY(-1px);
+        }
+
+        .search-tag:hover i {
+            color: white;
+        }
+
+        /* Grid de Mini Tutoriais */
+        .tutoriais-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+
+        @media (min-width: 640px) {
+            .tutoriais-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .tutoriais-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .tutoriais-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .tutoriais-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        /* Card de Tutorial */
+        .tutorial-card {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+            position: relative;
+            height: 100%;
+        }
+
+        .tutorial-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--secondary);
+        }
+
+        /* Cabeçalho colorido por categoria */
+        .tutorial-card.energy .card-header {
+            background: var(--energy-bg);
+        }
+
+        .tutorial-card.video .card-header {
+            background: var(--video-bg);
+        }
+
+        .tutorial-card.network .card-header {
+            background: var(--network-bg);
+        }
+
+        .tutorial-card.windows .card-header {
+            background: var(--windows-bg);
+        }
+
+        .tutorial-card.peripheral .card-header {
+            background: var(--peripheral-bg);
+        }
+
+        .tutorial-card.hardware .card-header {
+            background: var(--hardware-bg);
+        }
+
+        .tutorial-card.command .card-header {
+            background: var(--command-bg);
+        }
+
+        .card-header {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card-header i {
+            width: 30px;
+            height: 30px;
+            background: currentColor;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .tutorial-card.energy .card-header i {
+            background: var(--energy);
+        }
+
+        .tutorial-card.video .card-header i {
+            background: var(--video);
+        }
+
+        .tutorial-card.network .card-header i {
+            background: var(--network);
+        }
+
+        .tutorial-card.windows .card-header i {
+            background: var(--windows);
+        }
+
+        .tutorial-card.peripheral .card-header i {
+            background: var(--peripheral);
+        }
+
+        .tutorial-card.hardware .card-header i {
+            background: var(--hardware);
+        }
+
+        .tutorial-card.command .card-header i {
+            background: var(--command);
+        }
+
+        .card-header h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+            flex: 1;
+        }
+
+        .card-content {
+            padding: 0.8rem;
+        }
+
+        /* Mini tutorial dentro do card */
+        .mini-tutorial {
+            margin-bottom: 0.5rem;
+        }
+
+        .mini-tutorial .titulo {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .mini-tutorial .titulo i {
+            color: var(--secondary);
+            font-size: 0.8rem;
+        }
+
+        .passo {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-bottom: 0.6rem;
+            font-size: 0.75rem;
+            color: var(--text-soft);
+            line-height: 1.4;
+        }
+
+        .passo-numero {
+            width: 20px;
+            height: 20px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .dica {
+            background: var(--hardware-bg);
+            border-left: 2px solid var(--hardware);
+            padding: 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            color: var(--text-soft);
+            margin: 0.6rem 0;
+        }
+
+        .comando {
+            background: #1E293B;
+            color: #E2E8F0;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin: 0.4rem 0;
+            border-left: 2px solid var(--secondary);
+        }
+
+        .atalho {
+            display: inline-block;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.15rem 0.4rem;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 0.7rem;
+        }
+
+        .tag-pequena {
+            font-size: 0.6rem;
+            color: var(--text-light);
+            background: var(--bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 30px;
+            display: inline-block;
+            margin-left: 0.3rem;
+        }
+
+        /* Seção Técnico */
+        .tecnico-section {
+            background: #FEF2F2;
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            border: 2px solid #FECACA;
+            margin-top: 0.5rem;
+        }
+
+        .tecnico-section h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #B91C1C;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tecnico-section h3 i {
+            font-size: 0.9rem;
+        }
+
+        .tecnico-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+
+        @media (min-width: 768px) {
+            .tecnico-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .tecnico-card {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 0.8rem;
+            border: 1px solid #FECACA;
+        }
+
+        .tecnico-card strong {
+            color: #B91C1C;
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.8rem;
+        }
+
+        .tecnico-card p {
+            font-size: 0.7rem;
+            color: var(--text-soft);
+        }
+
+        .tecnico-urgente {
+            margin-top: 0.8rem;
+            padding: 0.8rem;
+            background: white;
+            border-radius: var(--radius-sm);
+            border: 2px solid #DC2626;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .tecnico-urgente i {
+            font-size: 1.5rem;
+            color: #DC2626;
+        }
+
+        .tecnico-urgente div p {
+            font-size: 0.7rem;
+            margin-top: 0.2rem;
+        }
+
+        /* Rodapé */
+        .footer {
+            background: var(--surface);
+            border-top: 2px solid var(--border);
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+
+        .footer strong {
+            color: var(--secondary);
+        }
+
+        /* No results */
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 2px dashed var(--border);
+            display: none;
+        }
+
+        .no-results i {
+            font-size: 2rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results h3 {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+        }
+
+        .no-results p {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* Responsividade para mobile */
+        @media (max-width: 768px) {
+            .header {
+                flex-wrap: wrap;
+            }
+
+            .header-left {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-section {
+                width: 100%;
+                max-width: none;
+                margin-left: 0;
+            }
+
+            .header-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-left">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fas fa-address-book"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Suporte TI</h1>
+                        <p>Secretaria Unopar</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchTI" placeholder="Pesquisar tutorial..." onkeyup="filterTISearch()">
+                </div>
+                <a href="dashboard.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Voltar</span>
+                </a>
+            </div>
+
+            <div class="header-info">
+                <div class="datetime">
+                    <i class="far fa-calendar"></i>
+                    <span id="currentDate"></span>
+                    <i class="far fa-clock"></i>
+                    <span id="currentTime"></span>
+                </div>
+                <div class="user-greeting">
+                    <i class="far fa-smile"></i>
+                    <span id="userName"></span>
+                </div>
+            </div>
+        </header>
+        </header>
+
+        <main class="main-content">
+            <div class="ti-container">
+                <!-- Hero -->
+                <div class="ti-hero">
+                    <h2>🔧 Mini Tutoriais de Suporte</h2>
+                    <p>Clique nas tags ou busque pelo problema.</p>
+                    <p> AINDA EM DESENVOLVIMENTO, PODE HAVER ALGUNS ERROS NO FROONT...</p>
+                    <span class="ti-hero-badge">PCs antigos · Sem admin · Passo a passo</span>
+                </div>
+
+                <!-- Busca -->
+                <div class="ti-search">
+                    <div class="ti-search-header">
+                        <h3><i class="fas fa-search"></i> O que está acontecendo?</h3>
+                    </div>
+                    <div class="ti-search-content">
+                        <div class="search-wrapper-ti">
+                          
+                        </div>
+                        <div class="search-stats" id="searchStats">52 mini tutoriais · Clique nas tags</div>
+
+                        <div class="search-tags">
+                            <span class="search-tag" onclick="searchTag('não liga')"><i class="fas fa-plug"></i> não
+                                liga</span>
+                            <span class="search-tag" onclick="searchTag('tela preta')"><i class="fas fa-tv"></i> tela
+                                preta</span>
+                            <span class="search-tag" onclick="searchTag('sem vídeo')"><i class="fas fa-eye-slash"></i>
+                                sem vídeo</span>
+                            <span class="search-tag" onclick="searchTag('projetor')"><i class="fas fa-video"></i>
+                                projetor</span>
+                            <span class="search-tag" onclick="searchTag('internet')"><i class="fas fa-globe"></i>
+                                internet</span>
+                            <span class="search-tag" onclick="searchTag('rede')"><i class="fas fa-wifi"></i> rede</span>
+                            <span class="search-tag" onclick="searchTag('ip')"><i class="fas fa-ip"></i> IP</span>
+                            <span class="search-tag" onclick="searchTag('ping')"><i class="fas fa-network-wired"></i>
+                                ping</span>
+                            <span class="search-tag" onclick="searchTag('lento')"><i class="fas fa-turtle"></i>
+                                lento</span>
+                            <span class="search-tag" onclick="searchTag('travando')"><i class="fas fa-pause"></i>
+                                travando</span>
+                            <span class="search-tag" onclick="searchTag('tela azul')"><i
+                                    class="fas fa-exclamation-triangle"></i> tela azul</span>
+                            <span class="search-tag" onclick="searchTag('não inicia')"><i class="fab fa-windows"></i>
+                                não inicia</span>
+                            <span class="search-tag" onclick="searchTag('teclado')"><i class="fas fa-keyboard"></i>
+                                teclado</span>
+                            <span class="search-tag" onclick="searchTag('mouse')"><i class="fas fa-mouse"></i>
+                                mouse</span>
+                            <span class="search-tag" onclick="searchTag('usb')"><i class="fas fa-usb"></i> USB</span>
+                            <span class="search-tag" onclick="searchTag('som')"><i class="fas fa-volume-up"></i>
+                                som</span>
+                            <span class="search-tag" onclick="searchTag('bip')"><i class="fas fa-bell"></i> bip</span>
+                            <span class="search-tag" onclick="searchTag('superaquecendo')"><i
+                                    class="fas fa-thermometer-half"></i> superaquecendo</span>
+                            <span class="search-tag" onclick="searchTag('data errada')"><i class="fas fa-calendar"></i>
+                                data errada</span>
+                            <span class="search-tag" onclick="searchTag('hd')"><i class="fas fa-hdd"></i> HD</span>
+                            <span class="search-tag" onclick="searchTag('cmd')"><i class="fas fa-terminal"></i>
+                                cmd</span>
+                            <span class="search-tag" onclick="searchTag('f8')"><i class="fas fa-key"></i> F8</span>
+                            <span class="search-tag" onclick="searchTag('f12')"><i class="fas fa-key"></i> F12</span>
+                            <span class="search-tag" onclick="searchTag('win+r')"><i class="fas fa-keyboard"></i>
+                                Win+R</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRID DE MINI TUTORIAIS -->
+                <div class="tutoriais-grid" id="tutoriaisGrid">
+                    <!-- Cards mantidos exatamente como estavam -->
+                    <!-- ===== ENERGIA ===== -->
+                    <div class="tutorial-card energy" data-search="não liga energia tomada">
+                        <div class="card-header">
+                            <i class="fas fa-plug"></i>
+                            <h4>🔌 Computador não liga • Passo 1</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="titulo"><i class="fas fa-bolt"></i> Verifique a tomada</div>
+                                <div class="passo"><span class="passo-numero">1</span><span>Teste a tomada com outro
+                                        aparelho (abajur, carregador). Se não funcionar, a tomada está com
+                                        problema.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Teste em outra tomada. Às
+                                        vezes é só trocar de lugar.</span></div>
+                                <div class="dica">💡 Filtros de linha e estabilizadores também podem queimar. Teste
+                                    direto na tomada.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card energy" data-search="não liga fonte chave">
+                        <div class="card-header">
+                            <i class="fas fa-power-off"></i>
+                            <h4>🔌 Computador não liga • Passo 2</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="titulo"><i class="fas fa-bolt"></i> Verifique a fonte de alimentação</div>
+                                <div class="passo"><span class="passo-numero">1</span><span>Atrás do gabinete, veja se a
+                                        chave da fonte está na posição "1" (ligado).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Teste outro cabo de energia.
+                                        Cabos podem romper internamente.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Abra o gabinete e veja se há
+                                        LED verde na placa-mãe. Se não houver, a fonte pode estar queimada.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card energy" data-search="tela preta sem vídeo cooler gira">
+                        <div class="card-header">
+                            <i class="fas fa-fan"></i>
+                            <h4>💨 Ventoinha gira • Tela preta</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Verifique os cabos de vídeo
+                                        (HDMI/VGA) dos dois lados. Muitas vezes estão soltos.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Teste outra entrada no
+                                        monitor (HDMI1, HDMI2, VGA).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Recoloque a memória RAM:
+                                        abra o gabinete, retire os pentes e coloque de novo FIRME.</span></div>
+                                <div class="dica">⚠️ Se tiver dois pentes, teste com um de cada vez.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="bip bipos código sonoro">
+                        <div class="card-header">
+                            <i class="fas fa-bell"></i>
+                            <h4>🔊 Computador dá bips</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">🔴</span><span><strong>Bips longos
+                                            contínuos:</strong> Problema de memória RAM.</span></div>
+                                <div class="passo"><span class="passo-numero">🔵</span><span><strong>1 bip longo, 2
+                                            curtos:</strong> Problema de vídeo (placa de vídeo).</span></div>
+                                <div class="passo"><span class="passo-numero">⚫</span><span><strong>Bips curtos
+                                            contínuos:</strong> Fonte com problema.</span></div>
+                                <div class="dica">Anote a sequência e pesquise "código de bips [modelo da placa-mãe]"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card video" data-search="projetor datashow sem sinal">
+                        <div class="card-header">
+                            <i class="fas fa-video"></i>
+                            <h4>📽️ Projetor sem sinal</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte <span
+                                            class="atalho">Win + P</span> e escolha "Duplicar". É o passo mais
+                                        importante!</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>No controle do projetor,
+                                        aperte "Source" ou "Input" até aparecer HDMI/VGA.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Verifique se o cabo está bem
+                                        conectado. Teste outro cabo se possível.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card video" data-search="projetor imagem cortada desalinhada">
+                        <div class="card-header">
+                            <i class="fas fa-crop-alt"></i>
+                            <h4>📽️ Imagem cortada</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Ajuste a resolução: botão
+                                        direito na área de trabalho → "Configurações de tela".</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Use a resolução recomendada
+                                        (geralmente 1024x768 ou 1280x720 para projetores).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Mantenha a taxa de
+                                        atualização em 60Hz.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="internet não funciona led">
+                        <div class="card-header">
+                            <i class="fas fa-globe"></i>
+                            <h4>🌐 Internet não funciona • Passo 1</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Olhe atrás do computador: o
+                                        led da placa de rede está piscando (verde/laranja)?</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Se não piscar, o cabo pode
+                                        estar com problema ou mal encaixado. Reconecte.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Teste outro computador na
+                                        mesma tomada de rede. Se funcionar, o problema é no seu PC.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="internet ipconfig ip">
+                        <div class="card-header">
+                            <i class="fas fa-terminal"></i>
+                            <h4>🌐 Verificar IP (ipconfig)</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra o Prompt: <span
+                                            class="atalho">Win + R</span>, digite "cmd".</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite <span
+                                            class="comando">ipconfig</span> e procure por "Endereço IPv4".</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se começar com
+                                        <strong>169.254</strong>, o PC não recebeu IP automático. Siga os próximos
+                                        cards.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="ip release renew renovar">
+                        <div class="card-header">
+                            <i class="fas fa-sync-alt"></i>
+                            <h4>🔄 Renovar IP</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra o Prompt como
+                                        administrador (Win+R, "cmd", Ctrl+Shift+Enter).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite <span
+                                            class="comando">ipconfig /release</span> (libera o IP atual).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Depois <span
+                                            class="comando">ipconfig /renew</span> (solicita novo IP). Pode demorar
+                                        alguns segundos.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="ping teste conexão">
+                        <div class="card-header">
+                            <i class="fas fa-network-wired"></i>
+                            <h4>📡 Testar conexão (ping)</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>No Prompt, digite <span
+                                            class="comando">ping 8.8.8.8</span></span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Se receber "Resposta", a
+                                        internet está funcionando.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se der "Tempo esgotado", não
+                                        há conexão com a internet.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="ping gateway roteador">
+                        <div class="card-header">
+                            <i class="fas fa-router"></i>
+                            <h4>📡 Testar gateway (rede local)</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>No ipconfig, anote o
+                                        "Gateway Padrão" (ex: 192.168.1.1).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite <span
+                                            class="comando">ping 192.168.1.1</span> (use o seu gateway).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se funcionar, a rede local
+                                        está ok. O problema é externo.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="rede não identificada">
+                        <div class="card-header">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h4>🔄 Rede não identificada</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra o Prompt como admin e
+                                        digite <span class="comando">ipconfig /release</span></span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Depois <span
+                                            class="comando">ipconfig /renew</span></span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se não resolver, tente <span
+                                            class="comando">netsh winsock reset</span> e reinicie.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card network" data-search="dns navega não funciona">
+                        <div class="card-header">
+                            <i class="fas fa-database"></i>
+                            <h4>📡 Problema de DNS</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Se ping 8.8.8.8 funciona mas
+                                        sites não abrem, problema é DNS.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite <span
+                                            class="comando">ipconfig /flushdns</span> para limpar o cache.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Configure DNS manual:
+                                        8.8.8.8 e 8.8.4.4 (Google).</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="lento gerenciador tarefas">
+                        <div class="card-header">
+                            <i class="fas fa-chart-line"></i>
+                            <h4>🐢 Computador lento • Passo 1</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte <span
+                                            class="atalho">Ctrl + Shift + Esc</span> para abrir o Gerenciador de
+                                        Tarefas.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Veja o que está em 100%:
+                                        CPU, Memória ou Disco.</span></div>
+                                <div class="dica">CPU 100% → programa travado. Memória 100% → pouca RAM. Disco 100% → HD
+                                    pode estar com problema.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="lento espaço disco cheio">
+                        <div class="card-header">
+                            <i class="fas fa-hdd"></i>
+                            <h4>💽 Verificar espaço em disco</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra "Meu Computador" e veja
+                                        o espaço livre no disco C:.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Se tiver menos de 10% livre,
+                                        o PC fica lento. Apague arquivos ou mova para outro disco.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Use <span class="atalho">Win
+                                            + R</span> e digite <span class="comando">cleanmgr</span> para
+                                        limpeza.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="cleanmgr limpeza disco">
+                        <div class="card-header">
+                            <i class="fas fa-broom"></i>
+                            <h4>🧹 Limpeza de disco (cleanmgr)</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span><span class="atalho">Win +
+                                            R</span>, digite <span class="comando">cleanmgr</span> e Enter.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha o disco (geralmente
+                                        C:) e clique OK.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Marque "Arquivos
+                                        temporários", "Lixeira" e clique em OK.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="inicialização lenta programas iniciar">
+                        <div class="card-header">
+                            <i class="fas fa-play"></i>
+                            <h4>⏱️ Inicialização lenta</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra o Gerenciador de
+                                        Tarefas e vá na aba "Inicializar".</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Desative programas que não
+                                        precisam iniciar com o Windows (botão direito → Desativar).</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="tela azul bsod">
+                        <div class="card-header">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h4>🔵 Tela azul • Primeiros passos</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Anote o código do erro (ex:
+                                        MEMORY_MANAGEMENT).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Reinicie o computador. Pode
+                                        ser um erro isolado.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se repetir, inicie em Modo
+                                        Seguro (F8 ao ligar).</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="tela azul sfc scannow">
+                        <div class="card-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>🔵 Reparar arquivos do sistema</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra o Prompt como
+                                        administrador.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite <span
+                                            class="comando">sfc /scannow</span> e aguarde (pode demorar).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se encontrar arquivos
+                                        corrompidos, tentará reparar.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="não inicia modo seguro f8">
+                        <div class="card-header">
+                            <i class="fas fa-key"></i>
+                            <h4>💿 Windows não inicia • F8</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Ao ligar o PC, aperte <span
+                                            class="atalho">F8</span> repetidamente antes da logo do Windows.</span>
+                                </div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha "Modo Seguro" ou
+                                        "Última configuração válida".</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="restauração sistema voltar">
+                        <div class="card-header">
+                            <i class="fas fa-undo-alt"></i>
+                            <h4>⏪ Restauração do Sistema</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>No Modo Seguro, abra o Menu
+                                        Iniciar e procure "Restauração do Sistema".</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha um ponto anterior ao
+                                        problema.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Siga as instruções e aguarde
+                                        a restauração.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card peripheral" data-search="teclado não funciona">
+                        <div class="card-header">
+                            <i class="fas fa-keyboard"></i>
+                            <h4>⌨️ Teclado não funciona</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Teste em outra porta USB (as
+                                        de trás são melhores).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Aperte Num Lock. A luz
+                                        acende? Se sim, o teclado tem energia.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Teste em outro computador
+                                        para saber se o teclado queimou.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card peripheral" data-search="mouse não funciona">
+                        <div class="card-header">
+                            <i class="fas fa-mouse"></i>
+                            <h4>🖱️ Mouse não funciona</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Teste em outra porta USB (as
+                                        de trás).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Limpe o sensor com um
+                                        cotonete seco.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Teste em outro PC. Se
+                                        funcionar, o problema é no seu computador.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card peripheral" data-search="usb não reconhece pendrive">
+                        <div class="card-header">
+                            <i class="fas fa-usb"></i>
+                            <h4>💾 USB não reconhece</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Teste em outra porta
+                                        USB.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Teste outro pendrive na
+                                        mesma porta.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Abra o Gerenciador de
+                                        Dispositivos (devmgmt.msc) e veja se há ponto de exclamação.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card peripheral" data-search="som áudio não funciona">
+                        <div class="card-header">
+                            <i class="fas fa-volume-up"></i>
+                            <h4>🔊 Sem som</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Verifique se o volume não
+                                        está mudo (ícone de som na barra de tarefas).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Teste fone de ouvido na
+                                        entrada frontal e traseira.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Win+R, digite "mmsys.cpl" e
+                                        veja se o dispositivo correto está como padrão.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="superaquecendo quente desliga">
+                        <div class="card-header">
+                            <i class="fas fa-thermometer-half"></i>
+                            <h4>🌡️ Computador superaquecendo</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Verifique se os coolers
+                                        estão girando. Abra o gabinete e veja.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Limpe as saídas de ar com um
+                                        pano seco (não abra sem técnica).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Afaste o computador de
+                                        paredes ou locais abafados.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="data errada hora resetando">
+                        <div class="card-header">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h4>📅 Data/hora sempre errada</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>É a bateria da placa-mãe
+                                        (CR2032) que está fraca.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Localização: dentro do
+                                        gabinete, na placa-mãe (parece uma pilha de relógio).</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Trocar a bateria resolve.
+                                        Chame um técnico ou faça com cuidado.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="hd não aparece no bootable device">
+                        <div class="card-header">
+                            <i class="fas fa-hdd"></i>
+                            <h4>💽 HD não aparece</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Entre na BIOS (F2 ou Del ao
+                                        ligar).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Procure por "Storage" ou
+                                        "SATA" e veja se o HD aparece na lista.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Se não aparecer, pode ser
+                                        cabo solto ou HD queimado. Chame técnico.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="cmd prompt comando abrir">
+                        <div class="card-header">
+                            <i class="fas fa-terminal"></i>
+                            <h4>🖥️ Abrir o Prompt (cmd)</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span><span class="atalho">Win +
+                                            R</span>, digite "cmd" e Enter.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Para administrador: digite
+                                        "cmd", Ctrl+Shift+Enter.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="ipconfig ip">
+                        <div class="card-header">
+                            <i class="fas fa-network-wired"></i>
+                            <h4>📊 ipconfig - Ver IP</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">ipconfig</div>
+                                <div class="passo"><span class="passo-numero">🔍</span><span>Mostra seu IP, máscara de
+                                        rede e gateway.</span></div>
+                                <div class="passo"><span class="passo-numero">⚠️</span><span>IP 169.254 significa que
+                                        não recebeu IP automático.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="ping">
+                        <div class="card-header">
+                            <i class="fas fa-exchange-alt"></i>
+                            <h4>📡 ping - Testar conexão</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">ping 8.8.8.8</div>
+                                <div class="comando">ping [gateway]</div>
+                                <div class="passo"><span class="passo-numero">✅</span><span>Resposta = conexão
+                                        funcionando</span></div>
+                                <div class="passo"><span class="passo-numero">❌</span><span>Tempo esgotado = sem
+                                        conexão</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="msconfig configuração sistema">
+                        <div class="card-header">
+                            <i class="fas fa-cog"></i>
+                            <h4>⚙️ msconfig - Configuração</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">msconfig</div>
+                                <div class="passo"><span class="passo-numero">1</span><span>Na aba "Inicialização do
+                                        sistema", escolha "Inicialização normal".</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Na aba "Serviços", oculte
+                                        serviços Microsoft e desative suspeitos.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="devmgmt.msc gerenciador dispositivos">
+                        <div class="card-header">
+                            <i class="fas fa-tools"></i>
+                            <h4>🔧 Gerenciador de Dispositivos</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">devmgmt.msc</div>
+                                <div class="passo"><span class="passo-numero">🔍</span><span>Procure por dispositivos
+                                        com ponto de exclamação amarelo.</span></div>
+                                <div class="passo"><span class="passo-numero">🔄</span><span>Clique com direito e
+                                        "Atualizar driver".</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="cleanmgr limpeza">
+                        <div class="card-header">
+                            <i class="fas fa-broom"></i>
+                            <h4>🧹 Limpeza de disco</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">cleanmgr</div>
+                                <div class="passo"><span class="passo-numero">1</span><span>Escolha o disco C: e clique
+                                        OK.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Marque "Arquivos
+                                        temporários" e "Lixeira".</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="sfc scannow reparar">
+                        <div class="card-header">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>🛡️ sfc /scannow - Reparar</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">sfc /scannow</div>
+                                <div class="passo"><span class="passo-numero">⚠️</span><span>Execute como
+                                        administrador.</span></div>
+                                <div class="passo"><span class="passo-numero">⏳</span><span>Pode levar vários minutos.
+                                        Não interrompa.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="f8 modo seguro">
+                        <div class="card-header">
+                            <i class="fas fa-key"></i>
+                            <h4>F8 - Modo Seguro</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte F8 repetidamente ao
+                                        ligar o PC, antes da logo do Windows.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha "Modo Seguro" para
+                                        iniciar só com drivers básicos.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="f12 boot pendrive">
+                        <div class="card-header">
+                            <i class="fas fa-key"></i>
+                            <h4>F12 - Menu de Boot</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte F12 ao ligar o
+                                        computador.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha de onde iniciar: HD,
+                                        pendrive, CD/DVD.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="win+r executar">
+                        <div class="card-header">
+                            <i class="fas fa-keyboard"></i>
+                            <h4>Win+R - Executar</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte a tecla Windows e R
+                                        ao mesmo tempo.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite o nome do programa:
+                                        cmd, msconfig, devmgmt.msc, cleanmgr...</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="gerenciador tarefas ctrl shift esc">
+                        <div class="card-header">
+                            <i class="fas fa-tasks"></i>
+                            <h4>Gerenciador de Tarefas</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span><span class="atalho">Ctrl +
+                                            Shift + Esc</span> abre direto.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Veja desempenho, finalize
+                                        programas travados.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="win p projetor">
+                        <div class="card-header">
+                            <i class="fas fa-projector"></i>
+                            <h4>Win + P - Projetor</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte Windows + P.</span>
+                                </div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha: Só tela do PC,
+                                        Duplicar, Estender, Só segunda tela.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="alt tab alternar janelas">
+                        <div class="card-header">
+                            <i class="fas fa-window-restore"></i>
+                            <h4>Alt + Tab - Alternar</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Segure Alt e aperte Tab para
+                                        alternar entre programas.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="win l bloquear">
+                        <div class="card-header">
+                            <i class="fas fa-lock"></i>
+                            <h4>Win + L - Bloquear</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Aperte Windows + L para
+                                        bloquear a tela rapidamente.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="f5 atualizar recarregar">
+                        <div class="card-header">
+                            <i class="fas fa-sync-alt"></i>
+                            <h4>F5 - Atualizar</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>No navegador ou no Windows,
+                                        atualiza a página/pasta.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="f2 renomear">
+                        <div class="card-header">
+                            <i class="fas fa-i-cursor"></i>
+                            <h4>F2 - Renomear</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Selecione um arquivo e
+                                        aperte F2 para mudar o nome.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card command" data-search="f3 buscar pesquisar">
+                        <div class="card-header">
+                            <i class="fas fa-search"></i>
+                            <h4>F3 - Buscar</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abre ferramenta de pesquisa
+                                        em arquivos ou navegador.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="memória ram testar mdsched">
+                        <div class="card-header">
+                            <i class="fas fa-microchip"></i>
+                            <h4>🧪 Testar memória RAM</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span><span class="atalho">Win +
+                                            R</span>, digite <span class="comando">mdsched</span> e Enter.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Escolha "Reiniciar agora e
+                                        verificar problemas".</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>O computador vai reiniciar e
+                                        testar a RAM. Pode demorar.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="chkdsk verificar disco">
+                        <div class="card-header">
+                            <i class="fas fa-hdd"></i>
+                            <h4>💽 Verificar disco (chkdsk)</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra o Prompt como
+                                        administrador.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Digite <span
+                                            class="comando">chkdsk C: /f</span> e Enter.</span></div>
+                                <div class="passo"><span class="passo-numero">3</span><span>Pode pedir para verificar na
+                                        próxima reinicialização. Diga "S" e reinicie.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="desfragmentar otimizar">
+                        <div class="card-header">
+                            <i class="fas fa-chart-pie"></i>
+                            <h4>📊 Desfragmentar disco</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Abra "Meu Computador",
+                                        clique direito no disco C: → "Propriedades".</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Vá em "Ferramentas" →
+                                        "Otimizar".</span></div>
+                                <div class="dica">💡 Só faça em HD (discos mecânicos). SSD não precisa desfragmentar.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card hardware" data-search="temperatura hwmonitor">
+                        <div class="card-header">
+                            <i class="fas fa-thermometer-half"></i>
+                            <h4>🌡️ Verificar temperatura</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span>Use programas como HWMonitor
+                                        (baixar e instalar).</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Temperaturas acima de 80°C
+                                        em repouso indicam superaquecimento.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="arquivos temporários temp">
+                        <div class="card-header">
+                            <i class="fas fa-trash-alt"></i>
+                            <h4>🗑️ Arquivos temporários</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="passo"><span class="passo-numero">1</span><span><span class="atalho">Win +
+                                            R</span>, digite <span class="comando">%temp%</span> e Enter.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Selecione tudo (Ctrl+A) e
+                                        aperte Delete. Pode pular arquivos em uso.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="services.msc serviços">
+                        <div class="card-header">
+                            <i class="fas fa-cogs"></i>
+                            <h4>⚙️ Serviços do Windows</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">services.msc</div>
+                                <div class="passo"><span class="passo-numero">1</span><span>Lista todos os serviços do
+                                        sistema.</span></div>
+                                <div class="passo"><span class="passo-numero">2</span><span>Procure serviços parados que
+                                        deveriam estar em execução.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tutorial-card windows" data-search="msinfo32 informações sistema">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h4>ℹ️ Informações do sistema</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="mini-tutorial">
+                                <div class="comando">msinfo32</div>
+                                <div class="passo"><span class="passo-numero">🔍</span><span>Mostra todas as informações
+                                        do hardware e software.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO TÉCNICO -->
+                <div class="tecnico-section">
+                    <h3><i class="fas fa-exclamation-triangle"></i> 🚨 Quando chamar o técnico</h3>
+
+                    <div class="tecnico-grid">
+                        <div class="tecnico-card">
+                            <strong>🔴 Rede geral</strong>
+                            <p>Várias máquinas sem internet na mesma sala - problema no switch/rack.</p>
+                        </div>
+                        <div class="tecnico-card">
+                            <strong>🔴 Cheiro de queimado</strong>
+                            <p>Desligue IMEDIATAMENTE! Pode ser fonte ou placa-mãe queimando.</p>
+                        </div>
+                        <div class="tecnico-card">
+                            <strong>🔴 Troca de hardware</strong>
+                            <p>Fonte, placa-mãe, memória RAM - requer abertura e peças novas.</p>
+                        </div>
+                        <div class="tecnico-card">
+                            <strong>🔴 HD com ruídos</strong>
+                            <p>Cliques ou chiados - pode queimar a qualquer momento. Backup urgente!</p>
+                        </div>
+                    </div>
+
+                    <div class="tecnico-urgente">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <strong style="color:#B91C1C;">URGENTE - Chame o técnico AGORA se:</strong>
+                            <p>Cheiro de queimado • Fumaça • Várias máquinas com mesmo problema • Barulhos estranhos no
+                                HD</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No results -->
+                <div class="no-results" id="noResults">
+                    <i class="fas fa-search"></i>
+                    <h3>Nenhum tutorial encontrado</h3>
+                    <p>Tente outras palavras ou clique nas tags acima</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Criado por <strong>Kívia</strong> · Estagiária na Unopar · 2026 · 52 mini tutoriais de suporte TI</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data e hora
+        function updateDateTime() {
+            const now = new Date();
+            const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            document.getElementById('currentDate').innerHTML = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+            document.getElementById('currentTime').innerHTML = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Nome do usuário
+        const userName = localStorage.getItem('username') || sessionStorage.getItem('username') || 'Equipe';
+        document.getElementById('userName').textContent = userName;
+
+        // Função de busca
+        function filterTISearch() {
+            const search = document.getElementById('searchTI').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.tutorial-card');
+            let visiveis = 0;
+
+            cards.forEach(card => {
+                const text = card.getAttribute('data-search') + ' ' + card.textContent.toLowerCase();
+                if (text.includes(search) || search === '') {
+                    card.style.display = 'block';
+                    visiveis++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.getElementById('searchStats').innerHTML = `${visiveis} de 52 mini tutoriais`;
+
+            if (visiveis === 0 && search !== '') {
+                document.getElementById('noResults').style.display = 'block';
+            } else {
+                document.getElementById('noResults').style.display = 'none';
+            }
+        }
+
+        function searchTag(tag) {
+            document.getElementById('searchTI').value = tag;
+            filterTISearch();
+        }
+    </script>
+</body>
+
+</html>
